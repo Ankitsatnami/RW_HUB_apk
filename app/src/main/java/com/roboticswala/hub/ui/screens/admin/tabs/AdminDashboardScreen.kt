@@ -1,0 +1,455 @@
+package com.roboticswala.hub.ui.screens.admin.tabs
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.HowToReg
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.roboticswala.hub.data.models.AdminDashboardData
+import com.roboticswala.hub.ui.components.MetricCard
+import com.roboticswala.hub.ui.components.StatusChip
+import com.roboticswala.hub.ui.theme.CircuitError
+import com.roboticswala.hub.ui.theme.CircuitSuccess
+import com.roboticswala.hub.ui.theme.CircuitWarning
+import com.roboticswala.hub.ui.theme.CyberCyan
+import com.roboticswala.hub.ui.theme.DarkSurface
+import com.roboticswala.hub.ui.theme.DarkSurfaceBorder
+import com.roboticswala.hub.ui.theme.DarkSurfaceElevated
+import com.roboticswala.hub.ui.theme.ElectricBlue
+import com.roboticswala.hub.ui.theme.LightSurface
+import com.roboticswala.hub.ui.theme.LightSurfaceBorder
+import com.roboticswala.hub.ui.theme.LightSurfaceElevated
+import com.roboticswala.hub.ui.theme.TextPrimaryDark
+import com.roboticswala.hub.ui.theme.TextPrimaryLight
+import com.roboticswala.hub.ui.theme.TextSecondaryDark
+import androidx.compose.foundation.clickable
+import com.roboticswala.hub.ui.theme.TextSecondaryLight
+
+@Composable
+fun AdminDashboardScreen(
+    data: AdminDashboardData,
+    onNavigateToStudents: (filter: String) -> Unit = {},
+    onNavigateToAttendance: () -> Unit = {},
+    onNavigateToBookings: () -> Unit = {},
+    onNavigateToProjects: () -> Unit = {},
+    onNavigateToEquipment: () -> Unit = {},
+    onNavigateToMore: () -> Unit = {},
+    onNavigateToChat: () -> Unit = {},
+    unreadChatCount: Int = 0,
+    modifier: Modifier = Modifier
+) {
+    val isDark = isSystemInDarkTheme()
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        // Admin Hub Status Banner
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = if (isDark) CyberCyan.copy(alpha = 0.4f) else ElectricBlue.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDark) DarkSurface.copy(alpha = 0.95f) else LightSurface
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "COMMAND CENTER",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.2.sp
+                            ),
+                            color = if (isDark) CyberCyan else ElectricBlue
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Robotics Lab Admin",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                        )
+                    }
+
+                    StatusChip(status = "System Online")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Real-time robotics facility monitoring, student rosters, and machine allocations. Tap any card below to manage records.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Community Group Chat & Live Discussion Alert Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = if (unreadChatCount > 0) CircuitError else if (isDark) CyberCyan.copy(alpha = 0.5f) else ElectricBlue.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .clickable(onClick = onNavigateToChat),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (unreadChatCount > 0) CircuitError.copy(alpha = 0.12f)
+                else if (isDark) DarkSurfaceElevated else LightSurfaceElevated
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (unreadChatCount > 0) CircuitError.copy(alpha = 0.2f)
+                            else if (isDark) CyberCyan.copy(alpha = 0.15f) else ElectricBlue.copy(alpha = 0.15f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                        contentDescription = "Chat",
+                        tint = if (unreadChatCount > 0) CircuitError else if (isDark) CyberCyan else ElectricBlue,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "Community Chat",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (unreadChatCount > 0) CircuitError.copy(alpha = 0.2f) else CircuitSuccess.copy(alpha = 0.2f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (unreadChatCount > 0) "$unreadChatCount NEW" else "LIVE",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 9.sp),
+                                color = if (unreadChatCount > 0) CircuitError else CircuitSuccess
+                            )
+                        }
+                    }
+                    Text(
+                        text = if (unreadChatCount > 0) "New messages from students waiting for review"
+                        else "Discussion box active • Tap to chat with all members",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Open",
+                    tint = if (isDark) TextSecondaryDark else TextSecondaryLight,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Row 1 Metrics: Total Students & Pending Approvals
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            MetricCard(
+                title = "Total Students",
+                value = data.totalStudents.toString(),
+                subtitle = "Enrolled • Tap to view",
+                icon = Icons.Filled.People,
+                modifier = Modifier.weight(1f),
+                accentColor = CyberCyan,
+                onClick = { onNavigateToStudents("ALL") }
+            )
+
+            MetricCard(
+                title = "Pending Approvals",
+                value = data.pendingApprovals.toString(),
+                subtitle = "Action required • Review",
+                icon = Icons.Filled.PersonAdd,
+                modifier = Modifier.weight(1f),
+                accentColor = CircuitWarning,
+                onClick = { onNavigateToStudents("PENDING") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Row 2 Metrics: Active Students & Today's Attendance
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            MetricCard(
+                title = "Active Students",
+                value = data.activeStudents.toString(),
+                subtitle = "In lab session • View",
+                icon = Icons.Filled.HowToReg,
+                modifier = Modifier.weight(1f),
+                accentColor = CircuitSuccess,
+                onClick = onNavigateToAttendance
+            )
+
+            MetricCard(
+                title = "Today's Attendance",
+                value = "${data.todayAttendancePercentage}%",
+                subtitle = "RFID clock-ins • Logs",
+                icon = Icons.Filled.AssignmentTurnedIn,
+                modifier = Modifier.weight(1f),
+                accentColor = ElectricBlue,
+                onClick = onNavigateToAttendance
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Row 3 Metrics: Active Projects & Pending Bookings
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            MetricCard(
+                title = "Active Projects",
+                value = data.activeProjects.toString(),
+                subtitle = "Prototypes • Registry",
+                icon = Icons.Filled.Build,
+                modifier = Modifier.weight(1f),
+                accentColor = CyberCyan,
+                onClick = onNavigateToProjects
+            )
+
+            MetricCard(
+                title = "Pending Bookings",
+                value = data.pendingBookings.toString(),
+                subtitle = "Bays & 3D Printers • Manage",
+                icon = Icons.Filled.BookmarkBorder,
+                modifier = Modifier.weight(1f),
+                accentColor = CircuitWarning,
+                onClick = onNavigateToBookings
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Low Stock Equipment Alert Card
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onNavigateToEquipment() },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Low Stock Equipment Alerts",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = if (isDark) TextPrimaryDark else TextPrimaryLight
+            )
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(CircuitError.copy(alpha = 0.15f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "${data.lowStockEquipment.size} ALERTS",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp
+                    ),
+                    color = CircuitError
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onNavigateToEquipment() }
+                .border(
+                    width = 1.dp,
+                    color = if (isDark) DarkSurfaceBorder else LightSurfaceBorder,
+                    shape = RoundedCornerShape(18.dp)
+                ),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDark) DarkSurface else LightSurface
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (data.lowStockEquipment.isEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .background(CircuitSuccess.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.AssignmentTurnedIn,
+                                contentDescription = null,
+                                tint = CircuitSuccess,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column {
+                            Text(
+                                text = "All Hardware Well Stocked",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                            )
+                            Text(
+                                text = "Zero critical component shortages • Tap to view catalog",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                            )
+                        }
+                    }
+                } else {
+                    data.lowStockEquipment.forEach { item ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (item.alertLevel == "Critical") CircuitError.copy(alpha = 0.15f)
+                                            else CircuitWarning.copy(alpha = 0.15f)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (item.alertLevel == "Critical") Icons.Filled.Warning else Icons.Filled.Inventory2,
+                                        contentDescription = null,
+                                        tint = if (item.alertLevel == "Critical") CircuitError else CircuitWarning,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column {
+                                    Text(
+                                        text = item.name,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                    )
+                                    Text(
+                                        text = item.stockDetail,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                    )
+                                }
+                            }
+
+                            StatusChip(status = item.alertLevel)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}

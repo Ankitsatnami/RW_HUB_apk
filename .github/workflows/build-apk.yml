@@ -1,0 +1,88 @@
+name: Build and Update RW HUB APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android APK & Update Repo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Licenses & Install SDK 35
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: |
+          ./gradlew assembleDebug --stacktrace --no-daemon > build_log.txt 2>&1 || BUILD_FAILED=true
+          if [ "$BUILD_FAILED" = "true" ]; then
+            echo "## Gradle Build Failed" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 120 build_log.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 120 build_log.txt
+            exit 1
+          fi
+
+      - name: Copy Built APK to Root
+        run: |
+          find app/build/outputs/ -type f || true
+          APK_FILE=$(find app/build/outputs -name "*.apk" | head -n 1)
+          echo "Found APK: $APK_FILE"
+          cp "$APK_FILE" RW_HUB.apk
+          cp "$APK_FILE" RoboticsWalaHub.apk
+          ls -lh RW_HUB.apk RoboticsWalaHub.apk
+
+      - name: Upload Debug APK Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RW_HUB_APK_AND_LOGS
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            build_log.txt
+          retention-days: 30
+
+      - name: Commit Error Log If Failed
+        if: failure()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f build_log.txt
+          git commit -m "ci(debug): upload build_log.txt for investigation [skip ci]" || true
+          git push origin HEAD:main || true
+
+      - name: Commit and Push Updated APK
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f RW_HUB.apk RoboticsWalaHub.apk
+          git commit -m "auto: update compiled RW_HUB.apk and RoboticsWalaHub.apk binaries v2.0.0 [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:main

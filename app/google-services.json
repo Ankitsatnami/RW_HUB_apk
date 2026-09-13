@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "357229968762",
+    "project_id": "robotics-wala-hub",
+    "storage_bucket": "robotics-wala-hub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:357229968762:android:f68ff6f017379177d9eac3",
+        "android_client_info": {
+          "package_name": "com.roboticswala.hub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLadih7fiHD281uw9b4ZbSHCbmeBBoFww"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
