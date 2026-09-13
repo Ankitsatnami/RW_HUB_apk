@@ -87,6 +87,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.roboticswala.hub.data.models.AchievementBannerItem
 import com.roboticswala.hub.data.models.AttendanceData
 import com.roboticswala.hub.data.models.EventItem
 import com.roboticswala.hub.data.models.LabBooking
@@ -203,6 +204,7 @@ fun StudentHomeScreen(
 
                 // ── 1.05 Continuous Sliding Achievement Banner Carousel ───
                 AchievementBannerCarousel(
+                    banners = uiState.banners,
                     isDark = isDark,
                     onNavigateToAchievements = onNavigateToAchievements
                 )
@@ -1941,79 +1943,27 @@ private fun AdminSquareCard(
 // Continuous Sliding Achievement Banner Carousel
 // ─────────────────────────────────────────────────────────────────────────────
 
-data class AchievementBannerItem(
-    val id: String,
-    val title: String,
-    val badge: String,
-    val category: String,
-    val team: String,
-    val date: String,
-    val imageUrl: String,
-    val description: String
-)
-
 @Composable
 fun AchievementBannerCarousel(
+    banners: List<AchievementBannerItem>,
     isDark: Boolean,
     onNavigateToAchievements: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val defaultBanners = remember {
-        listOf(
-            AchievementBannerItem(
-                id = "ach_1",
-                title = "1st Place - Autonomous Swarm Drone Grand Prix 2026",
-                badge = "🥇 1st Prize Gold",
-                category = "Drone Hackathon",
-                team = "Team AeroRobotics",
-                date = "2026-08-10",
-                imageUrl = "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=800&auto=format&fit=crop&q=80",
-                description = "Our autonomous quadcopter swarm completed dynamic 3D obstacle avoidance and multi-agent payload delivery."
-            ),
-            AchievementBannerItem(
-                id = "ach_2",
-                title = "Gold Trophy - National Combat Robowars Heavyweight",
-                badge = "🏆 National Champion",
-                category = "RoboWars",
-                team = "Team IronClad",
-                date = "2026-07-28",
-                imageUrl = "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&auto=format&fit=crop&q=80",
-                description = "Custom engineered 30kg titanium spinner combat bot remained undefeated across 5 elimination rounds."
-            ),
-            AchievementBannerItem(
-                id = "ach_3",
-                title = "Best Innovation Award - AI Bipedal Humanoid Rover",
-                badge = "🌟 Best Innovation",
-                category = "Innovation",
-                team = "Robotics Research Wing",
-                date = "2026-06-15",
-                imageUrl = "https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=800&auto=format&fit=crop&q=80",
-                description = "Reinforcement learning based dynamic balance control on Jetson Orin Nano with real-time terrain mapping."
-            ),
-            AchievementBannerItem(
-                id = "ach_4",
-                title = "NASA Space Apps Hackathon Global Finalist",
-                badge = "🚀 Global Finalist",
-                category = "Space Robotics",
-                team = "Team CosmoBot",
-                date = "2026-05-20",
-                imageUrl = "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=800&auto=format&fit=crop&q=80",
-                description = "Autonomous Martian regolith sampling rover prototype selected for global round judging."
-            )
-        )
-    }
+    if (banners.isEmpty()) return
 
     var currentIndex by remember { mutableStateOf(0) }
 
     // Auto-advance sliding timer every 3.5 seconds
-    LaunchedEffect(Unit) {
+    LaunchedEffect(banners.size) {
+        if (banners.size <= 1) return@LaunchedEffect
         while (true) {
             delay(3500)
-            currentIndex = (currentIndex + 1) % defaultBanners.size
+            currentIndex = (currentIndex + 1) % banners.size
         }
     }
 
-    val currentBanner = defaultBanners[currentIndex]
+    val currentBanner = banners[currentIndex % banners.size]
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(

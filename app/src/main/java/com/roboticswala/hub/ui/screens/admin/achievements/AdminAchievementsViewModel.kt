@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.roboticswala.hub.data.models.AchievementBannerItem
+import com.roboticswala.hub.data.repository.BannerRepository
+import com.roboticswala.hub.data.repository.FirestoreBannerRepository
 
 data class AdminAchievementsUiState(
     val achievements: List<Achievement> = emptyList(),
@@ -24,11 +27,15 @@ data class AdminAchievementsUiState(
     val selectedAchievementForReview: Achievement? = null,
     val isActionLoading: Boolean = false,
     val snackbarMessage: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val banners: List<AchievementBannerItem> = emptyList(),
+    val isBannerModalOpen: Boolean = false,
+    val selectedBannerForEdit: AchievementBannerItem? = null
 )
 
 class AdminAchievementsViewModel(
     private val repository: AchievementRepository = FirestoreAchievementRepository(),
+    private val bannerRepository: BannerRepository = FirestoreBannerRepository(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : ViewModel() {
 
@@ -37,6 +44,15 @@ class AdminAchievementsViewModel(
 
     init {
         observeAllAchievements()
+        observeBanners()
+    }
+
+    private fun observeBanners() {
+        viewModelScope.launch {
+            bannerRepository.observeBanners().collect { list ->
+                _uiState.update { it.copy(banners = list) }
+            }
+        }
     }
 
     private fun observeAllAchievements() {
@@ -199,4 +215,41 @@ class AdminAchievementsViewModel(
     }
 
     fun clearMessage() = _uiState.update { it.copy(snackbarMessage = null, errorMessage = null) }
+
+    fun openBannerModal() = _uiState.update { it.copy(isBannerModalOpen = true) }
+    fun closeBannerModal() = _uiState.update { it.copy(isBannerModalOpen = false, selectedBannerForEdit = null) }
+    fun selectBannerForEdit(banner: AchievementBannerItem) = _uiState.update { it.copy(selectedBannerForEdit = banner) }
+    
+    fun saveBanner(banner: AchievementBannerItem) {
+        viewModelScope.launch {
+            val flow = if (banner.id.isBlank()) bannerRepository.addBanner(banner) else bannerRepository.updateBanner(banner)
+            flow.collect { res ->
+                when (res) {
+                    is Resource.Loading -> _uiState.update { it.copy(isActionLoading = true) }
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isActionLoading = false, selectedBannerForEdit = null, snackbarMessage = "Banner saved successfully!") }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(isActionLoading = false, errorMessage = res.message) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun deleteBanner(bannerId: String) {
+        viewModelScope.launch {
+            bannerRepository.deleteBanner(bannerId).collect { res ->
+                when (res) {
+                    is Resource.Loading -> _uiState.update { it.copy(isActionLoading = true) }
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isActionLoading = false, selectedBannerForEdit = null, snackbarMessage = "Banner deleted!") }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(isActionLoading = false, errorMessage = res.message) }
+                    }
+                }
+            }
+        }
+    }
 }

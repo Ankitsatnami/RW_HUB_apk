@@ -12,8 +12,11 @@ import com.roboticswala.hub.data.models.ProjectItem
 import com.roboticswala.hub.data.models.StudentProject
 import com.roboticswala.hub.data.models.StudentTask
 import com.roboticswala.hub.data.models.UserProfile
+import com.roboticswala.hub.data.models.AchievementBannerItem
 import com.roboticswala.hub.data.repository.FirestoreStudentDashboardRepository
 import com.roboticswala.hub.data.repository.StudentDashboardRepository
+import com.roboticswala.hub.data.repository.BannerRepository
+import com.roboticswala.hub.data.repository.FirestoreBannerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,6 +45,7 @@ data class StudentUiState(
     val latestNotice: NoticeItem? = null,
     val upcomingEvent: EventItem? = null,
     val adminProfiles: List<UserProfile> = emptyList(),
+    val banners: List<AchievementBannerItem> = emptyList(),
 
     // ── Projects Tab (preserved static until Day 6+) ──
     val projectsList: List<ProjectItem> = listOf(
@@ -134,7 +138,8 @@ data class StudentUiState(
 
 class StudentViewModel(
     private val currentUid: String,
-    private val dashboardRepo: StudentDashboardRepository = FirestoreStudentDashboardRepository()
+    private val dashboardRepo: StudentDashboardRepository = FirestoreStudentDashboardRepository(),
+    private val bannerRepo: BannerRepository = FirestoreBannerRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StudentUiState())
@@ -148,6 +153,15 @@ class StudentViewModel(
 
     private fun loadDashboardData() {
         _uiState.update { it.copy(isLoading = true, error = null) }
+
+        // 0. Banners — real-time
+        viewModelScope.launch {
+            bannerRepo.observeBanners()
+                .catch { /* silent — fallback to empty list */ }
+                .collect { banners ->
+                    _uiState.update { it.copy(banners = banners) }
+                }
+        }
 
         // 1. Profile — real-time
         viewModelScope.launch {

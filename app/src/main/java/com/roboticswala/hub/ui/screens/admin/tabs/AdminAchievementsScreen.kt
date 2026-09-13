@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.roboticswala.hub.data.models.Achievement
+import com.roboticswala.hub.data.models.AchievementBannerItem
 import com.roboticswala.hub.ui.components.RoboticsOutlinedButton
 import com.roboticswala.hub.ui.components.RoboticsPrimaryButton
 import com.roboticswala.hub.ui.components.RoboticsTextField
@@ -141,6 +142,13 @@ fun AdminAchievementsScreen(
                                 text = "Approved achievements and uploaded competition photos continuously slide on the main student dashboard.",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = textSecColor
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            RoboticsOutlinedButton(
+                                text = "🖼️ Manage Showcase Banners",
+                                onClick = { viewModel.openBannerModal() },
+                                modifier = Modifier.fillMaxWidth(),
+                                height = 36.dp
                             )
                         }
                     }
@@ -265,6 +273,19 @@ fun AdminAchievementsScreen(
             onApprove = { viewModel.approveAchievement(item.achievementId) },
             onReject = { reason -> viewModel.rejectAchievement(item.achievementId, reason) },
             onReturnCorrection = { msg -> viewModel.returnForCorrection(item.achievementId, msg) }
+        )
+    }
+
+    // BANNER MANAGEMENT MODAL
+    if (uiState.isBannerModalOpen) {
+        AdminBannerManagementDialog(
+            banners = uiState.banners,
+            selectedBanner = uiState.selectedBannerForEdit,
+            isLoading = uiState.isActionLoading,
+            onDismiss = viewModel::closeBannerModal,
+            onSelectBanner = viewModel::selectBannerForEdit,
+            onSaveBanner = viewModel::saveBanner,
+            onDeleteBanner = viewModel::deleteBanner
         )
     }
 }
@@ -456,6 +477,102 @@ fun AdminAchievementReviewDialog(
                 }
             } else {
                 RoboticsOutlinedButton(text = "Back", onClick = { actionType = "none" })
+            }
+        }
+    )
+}
+
+@Composable
+fun AdminBannerManagementDialog(
+    banners: List<AchievementBannerItem>,
+    selectedBanner: AchievementBannerItem?,
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onSelectBanner: (AchievementBannerItem?) -> Unit,
+    onSaveBanner: (AchievementBannerItem) -> Unit,
+    onDeleteBanner: (String) -> Unit
+) {
+    val isDark = isSystemInDarkTheme()
+    val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
+    
+    // Form States
+    var title by remember(selectedBanner) { mutableStateOf(selectedBanner?.title ?: "") }
+    var badge by remember(selectedBanner) { mutableStateOf(selectedBanner?.badge ?: "") }
+    var category by remember(selectedBanner) { mutableStateOf(selectedBanner?.category ?: "") }
+    var team by remember(selectedBanner) { mutableStateOf(selectedBanner?.team ?: "") }
+    var date by remember(selectedBanner) { mutableStateOf(selectedBanner?.date ?: "") }
+    var imageUrl by remember(selectedBanner) { mutableStateOf(selectedBanner?.imageUrl ?: "") }
+    var description by remember(selectedBanner) { mutableStateOf(selectedBanner?.description ?: "") }
+
+    val isEditing = selectedBanner != null
+    val isFormOpen = isEditing || (selectedBanner?.id == "")
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = if (isFormOpen) (if (selectedBanner?.id?.isBlank() == true) "Add New Banner" else "Edit Banner") else "Manage Live Banners", 
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+        },
+        text = {
+            if (isFormOpen) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item { RoboticsTextField(value = title, onValueChange = { title = it }, label = "Title *", placeholder = "e.g., 1st Place - Hackathon") }
+                    item { RoboticsTextField(value = badge, onValueChange = { badge = it }, label = "Badge", placeholder = "e.g., 🥇 1st Prize Gold") }
+                    item { RoboticsTextField(value = category, onValueChange = { category = it }, label = "Category", placeholder = "e.g., Drone Hackathon") }
+                    item { RoboticsTextField(value = team, onValueChange = { team = it }, label = "Team", placeholder = "e.g., Team AeroRobotics") }
+                    item { RoboticsTextField(value = date, onValueChange = { date = it }, label = "Date", placeholder = "YYYY-MM-DD") }
+                    item { RoboticsTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = "Image URL *", placeholder = "https://...") }
+                    item { RoboticsTextField(value = description, onValueChange = { description = it }, label = "Description", placeholder = "Short description...") }
+                }
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(banners) { banner ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { onSelectBanner(banner) },
+                            colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) DarkSurfaceBorder else LightSurfaceBorder)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(text = banner.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = textColor)
+                                Text(text = banner.team, fontSize = 12.sp, color = textColor.copy(alpha = 0.7f))
+                            }
+                        }
+                    }
+                    if (banners.isEmpty()) {
+                        item { Text("No banners found.", fontSize = 14.sp) }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            if (isFormOpen) {
+                RoboticsPrimaryButton(
+                    text = "Save Banner",
+                    onClick = {
+                        onSaveBanner(
+                            AchievementBannerItem(
+                                id = selectedBanner?.id ?: "",
+                                title = title, badge = badge, category = category, team = team, date = date, imageUrl = imageUrl, description = description
+                            )
+                        )
+                    },
+                    isLoading = isLoading,
+                    enabled = title.isNotBlank() && imageUrl.isNotBlank()
+                )
+            } else {
+                RoboticsPrimaryButton(text = "Add New Banner", onClick = { onSelectBanner(AchievementBannerItem(id = "")) })
+            }
+        },
+        dismissButton = {
+            if (isFormOpen) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RoboticsOutlinedButton(text = "Cancel", onClick = { onSelectBanner(null) })
+                    if (selectedBanner?.id?.isNotBlank() == true) {
+                        RoboticsOutlinedButton(text = "Delete", onClick = { onDeleteBanner(selectedBanner.id) })
+                    }
+                }
+            } else {
+                RoboticsOutlinedButton(text = "Close", onClick = onDismiss)
             }
         }
     )
