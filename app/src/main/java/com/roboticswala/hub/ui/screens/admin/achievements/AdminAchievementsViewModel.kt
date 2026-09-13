@@ -218,7 +218,7 @@ class AdminAchievementsViewModel(
 
     fun openBannerModal() = _uiState.update { it.copy(isBannerModalOpen = true) }
     fun closeBannerModal() = _uiState.update { it.copy(isBannerModalOpen = false, selectedBannerForEdit = null) }
-    fun selectBannerForEdit(banner: AchievementBannerItem) = _uiState.update { it.copy(selectedBannerForEdit = banner) }
+    fun selectBannerForEdit(banner: AchievementBannerItem?) = _uiState.update { it.copy(selectedBannerForEdit = banner) }
     
     fun saveBanner(banner: AchievementBannerItem) {
         viewModelScope.launch {

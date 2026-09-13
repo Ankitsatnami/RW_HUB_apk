@@ -2101,7 +2101,7 @@ fun AchievementBannerCarousel(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    defaultBanners.indices.forEach { index ->
+                    banners.indices.forEach { index ->
                         Box(
                             modifier = Modifier
                                 .height(6.dp)
