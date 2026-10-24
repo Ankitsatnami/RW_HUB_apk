@@ -1,8 +1,13 @@
 Add-Type -AssemblyName System.Drawing
 
-$srcPath = "d:\Project\RoboticsWalaHub-main\app\src\main\res\drawable\app_logo.png"
+$projectRoot = $PSScriptRoot
+if ([string]::IsNullOrEmpty($projectRoot)) {
+    $projectRoot = (Get-Location).Path
+}
+
+$srcPath = Join-Path $projectRoot "app\src\main\res\drawable\app_logo.png"
 $src = [System.Drawing.Bitmap]::FromFile($srcPath)
-$resDir = "d:\Project\RoboticsWalaHub-main\app\src\main\res"
+$resDir = Join-Path $projectRoot "app\src\main\res"
 
 # Densities configuration:
 # Legacy icons: 48, 72, 96, 144, 192
@@ -79,7 +84,7 @@ foreach ($d in $densities) {
 $src.Dispose()
 
 # Create mipmap-anydpi-v26 adaptive icon XMLs
-$anydpiDir = "$resDir\mipmap-anydpi-v26"
+$anydpiDir = Join-Path $resDir "mipmap-anydpi-v26"
 if (!(Test-Path $anydpiDir)) { New-Item -ItemType Directory -Path $anydpiDir -Force }
 
 $adaptiveXml = @"
@@ -90,7 +95,8 @@ $adaptiveXml = @"
 </adaptive-icon>
 "@
 
-$adaptiveXml | Out-File -FilePath "$anydpiDir\ic_launcher.xml" -Encoding utf8
-$adaptiveXml | Out-File -FilePath "$anydpiDir\ic_launcher_round.xml" -Encoding utf8
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+[System.IO.File]::WriteAllText((Join-Path $anydpiDir "ic_launcher.xml"), $adaptiveXml, $utf8NoBom)
+[System.IO.File]::WriteAllText((Join-Path $anydpiDir "ic_launcher_round.xml"), $adaptiveXml, $utf8NoBom)
 
 Write-Host "Accurate icons generated successfully!"
