@@ -1,3 +1,15 @@
+Downloading https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.10.2!
+
+Here are the highlights of this release:
+ - Support for Java 23
+ - Faster configuration cache
+ - Better configuration cache reports
+
+For more details see https://docs.gradle.org/8.10.2/release-notes.html
+
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
 > Task :app:preBuild UP-TO-DATE
@@ -5,14 +17,14 @@ Daemon will be stopped at the end of the build
 > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :app:generateDebugResValues
-> Task :app:checkDebugAarMetadata
 > Task :app:processDebugGoogleServices
+> Task :app:checkDebugAarMetadata
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
+> Task :app:mergeDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
-> Task :app:mergeDebugResources
 > Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
@@ -22,32 +34,24 @@ Daemon will be stopped at the end of the build
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets
 > Task :app:processDebugManifestForPackage
-> Task :app:compressDebugAssets
 > Task :app:desugarDebugFileDependencies
-> Task :app:mergeDebugJniLibFolders
-> Task :app:checkDebugDuplicateClasses
-> Task :app:mergeDebugNativeLibs
-> Task :app:mergeLibDexDebug
+> Task :app:compressDebugAssets
 > Task :app:processDebugResources
-
-> Task :app:stripDebugDebugSymbols
-Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libbarhopper_v3.so, libimage_processing_util_jni.so, libsurface_util_jni.so.
-
-> Task :app:validateSigningDebug
-> Task :app:writeDebugAppMetadata
-> Task :app:writeDebugSigningConfigVersions
-> Task :app:mergeExtDexDebug
+> Task :app:checkDebugDuplicateClasses
 > Task :app:compileDebugKotlin
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminAchievementsScreen.kt:286:41 Inapplicable candidate(s): fun selectBannerForEdit(banner: AchievementBannerItem): Unit
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/tabs/StudentHomeScreen.kt:2104:21 Unresolved reference 'defaultBanners'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/tabs/StudentHomeScreen.kt:2104:44 Overload resolution ambiguity between candidates:
-fun <T> Iterable<T>.forEach(action: (T) -> Unit): Unit
-fun <K, V> Map<out K, V>.forEach(action: (Map.Entry<K, V>) -> Unit): Unit
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/tabs/StudentHomeScreen.kt:2104:54 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/tabs/StudentHomeScreen.kt:2105:25 @Composable invocations can only happen from the context of a @Composable function
+> Task :app:mergeExtDexDebug
+
+> Task :app:compileDebugKotlin
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:739:41 Unresolved reference 'CircuitWarning'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:745:37 Unresolved reference 'CircuitWarning'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:791:41 Unresolved reference 'CircuitWarning'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:797:37 Unresolved reference 'CircuitWarning'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/utils/PdfReportExporter.kt:107:109 Unresolved reference 'remainingBudget'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/utils/PdfReportExporter.kt:108:72 Unresolved reference 'totalExpensesCount'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/utils/PdfReportExporter.kt:109:75 Unresolved reference 'pendingExpensesCount'.
 
 > Task :app:compileDebugKotlin FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1789324528886.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1792855595342.json
 
 FAILURE: Build failed with an exception.
 
@@ -251,5 +255,5 @@ Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilat
 	... 2 more
 
 
-BUILD FAILED in 53s
-29 actionable tasks: 29 executed
+BUILD FAILED in 2m 46s
+22 actionable tasks: 22 executed
