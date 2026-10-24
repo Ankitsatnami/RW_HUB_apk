@@ -104,9 +104,9 @@ object PdfReportExporter {
                     "Total Approved Lab Grant Budget" to "₹${String.format(Locale.US, "%.2f", safeAnalytics.totalApprovedBudget)}",
                     "Total Approved Project Expenses" to "₹${String.format(Locale.US, "%.2f", safeAnalytics.totalApprovedExpenses)}",
                     "Pending Expense Claims" to "₹${String.format(Locale.US, "%.2f", safeAnalytics.totalPendingExpenses)}",
-                    "Remaining Available Lab Balance" to "₹${String.format(Locale.US, "%.2f", safeAnalytics.remainingBudget)}",
-                    "Total Expense Vouchers Filed" to "${safeAnalytics.totalExpensesCount}",
-                    "Pending Reimbursement Approvals" to "${safeAnalytics.pendingExpensesCount}"
+                    "Remaining Available Lab Balance" to "₹${String.format(Locale.US, "%.2f", safeAnalytics.totalRemainingBudget)}",
+                    "Budget Utilization Rate" to "${String.format(Locale.US, "%.1f", safeAnalytics.budgetUtilizationPercentage)}%",
+                    "Total Funded Research Projects" to "${safeAnalytics.totalProjects}"
                 )
                 else -> listOf(
                     "Total Registered Students" to "${safeAnalytics.totalStudents}",

@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.roboticswala.hub.ui.components.RoboticsOutlinedButton
+import com.roboticswala.hub.ui.theme.CircuitWarning
 import com.roboticswala.hub.ui.theme.CyberCyan
 import com.roboticswala.hub.ui.theme.CyberCyanGlow
 import com.roboticswala.hub.ui.theme.DarkSurface
