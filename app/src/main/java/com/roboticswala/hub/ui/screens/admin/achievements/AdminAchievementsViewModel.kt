@@ -237,6 +237,23 @@ class AdminAchievementsViewModel(
         }
     }
 
+    fun uploadBannerImage(imageBytes: ByteArray, onUploaded: (String) -> Unit) {
+        viewModelScope.launch {
+            bannerRepository.uploadBannerImage(imageBytes).collect { res ->
+                when (res) {
+                    is Resource.Loading -> _uiState.update { it.copy(isActionLoading = true) }
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isActionLoading = false) }
+                        res.data?.let { onUploaded(it) }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(isActionLoading = false, errorMessage = res.message ?: "Failed to upload image") }
+                    }
+                }
+            }
+        }
+    }
+
     fun deleteBanner(bannerId: String) {
         viewModelScope.launch {
             bannerRepository.deleteBanner(bannerId).collect { res ->

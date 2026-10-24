@@ -27,13 +27,31 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,25 +61,32 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.roboticswala.hub.data.models.ChatMessage
 import com.roboticswala.hub.ui.components.RoboticsBackground
 import com.roboticswala.hub.ui.theme.CircuitError
+import com.roboticswala.hub.ui.theme.CircuitSuccess
 import com.roboticswala.hub.ui.theme.CircuitWarning
 import com.roboticswala.hub.ui.theme.CyberCyan
 import com.roboticswala.hub.ui.theme.CyberCyanGlow
@@ -77,6 +102,7 @@ import com.roboticswala.hub.ui.theme.TextPrimaryDark
 import com.roboticswala.hub.ui.theme.TextPrimaryLight
 import com.roboticswala.hub.ui.theme.TextSecondaryDark
 import com.roboticswala.hub.ui.theme.TextSecondaryLight
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -191,7 +217,14 @@ fun CommunityChatScreen(
                     onSend = viewModel::sendMessage,
                     isSending = uiState.isSending,
                     isDark = isDark,
-                    typingUsers = uiState.typingUsers
+                    typingUsers = uiState.typingUsers,
+                    pendingAttachmentBytes = uiState.pendingAttachmentBytes,
+                    pendingAttachmentName = uiState.pendingAttachmentName,
+                    pendingAttachmentType = uiState.pendingAttachmentType,
+                    onClearAttachment = viewModel::clearPendingAttachment,
+                    onAttachFile = { bytes, name, type ->
+                        viewModel.setPendingAttachment(bytes, name, type)
+                    }
                 )
             }
         ) { innerPadding ->
@@ -360,13 +393,116 @@ fun ChatBubble(
                         }
                     }
 
+                    // Attachment render (if present)
+                    if (message.attachmentUrl.isNotBlank()) {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        if (message.attachmentType == "IMAGE") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(message.attachmentUrl)).apply {
+                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Cannot open image", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                            ) {
+                                AsyncImage(
+                                    model = message.attachmentUrl,
+                                    contentDescription = message.attachmentName.ifBlank { "Image" },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 120.dp, max = 220.dp)
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        } else {
+                            // Document / File Card
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        if (isOwn) Color.White.copy(alpha = 0.18f)
+                                        else if (isDark) DarkBackground.copy(alpha = 0.6f)
+                                        else LightBackground.copy(alpha = 0.7f)
+                                    )
+                                    .border(
+                                        1.dp,
+                                        if (isOwn) Color.White.copy(alpha = 0.35f)
+                                        else CyberCyan.copy(alpha = 0.4f),
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .clickable {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(message.attachmentUrl)).apply {
+                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Cannot open document", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isOwn) Color.White.copy(alpha = 0.25f) else CyberCyan.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (message.attachmentType == "DOCUMENT") Icons.Filled.Description else Icons.Filled.InsertDriveFile,
+                                        contentDescription = null,
+                                        tint = if (isOwn) Color.White else CyberCyan,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = message.attachmentName.ifBlank { "Document" },
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 12.sp),
+                                        color = if (isOwn) Color.White else if (isDark) TextPrimaryDark else TextPrimaryLight,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = "Tap to open / download",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                        color = if (isOwn) Color.White.copy(alpha = 0.8f) else CyberCyan
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Filled.Download,
+                                    contentDescription = "Open",
+                                    tint = if (isOwn) Color.White.copy(alpha = 0.85f) else CyberCyan,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+
                     // Message text
-                    Text(
-                        text = message.message,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
-                        color = if (isOwn) Color.White
-                        else if (isDark) TextPrimaryDark else TextPrimaryLight
-                    )
+                    if (message.message.isNotBlank() &&
+                        !(message.attachmentUrl.isNotBlank() && (message.message == "📷 Photo" || message.message == "📄 ${message.attachmentName}"))) {
+                        Text(
+                            text = message.message,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.5.sp),
+                            color = if (isOwn) Color.White
+                            else if (isDark) TextPrimaryDark else TextPrimaryLight
+                        )
+                    }
 
                     // Footer: time + optional delete button
                     Row(
@@ -502,8 +638,157 @@ fun ChatInputBar(
     onSend: () -> Unit,
     isSending: Boolean,
     isDark: Boolean,
-    typingUsers: List<String> = emptyList()
+    typingUsers: List<String> = emptyList(),
+    pendingAttachmentBytes: ByteArray? = null,
+    pendingAttachmentName: String = "",
+    pendingAttachmentType: String = "",
+    onClearAttachment: () -> Unit = {},
+    onAttachFile: (ByteArray, String, String) -> Unit = { _, _, _ -> }
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var showAttachmentDialog by remember { mutableStateOf(false) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+            val bytes = stream.toByteArray()
+            val fileName = "IMG_${System.currentTimeMillis()}.jpg"
+            onAttachFile(bytes, fileName, "IMAGE")
+        }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                if (bytes != null) {
+                    if (bytes.size > 15 * 1024 * 1024) {
+                        Toast.makeText(context, "Image exceeds 15 MB limit", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val name = getFileNameFromUri(context, uri) ?: "IMG_${System.currentTimeMillis()}.jpg"
+                        onAttachFile(bytes, name, "IMAGE")
+                    }
+                }
+            } catch (_: Exception) {
+                Toast.makeText(context, "Could not open image", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val documentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                if (bytes != null) {
+                    if (bytes.size > 15 * 1024 * 1024) {
+                        Toast.makeText(context, "File exceeds 15 MB limit", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val name = getFileNameFromUri(context, uri) ?: "DOC_${System.currentTimeMillis()}"
+                        val mime = context.contentResolver.getType(uri).orEmpty().lowercase()
+                        val type = when {
+                            mime.startsWith("image/") -> "IMAGE"
+                            mime.contains("pdf") || name.endsWith(".pdf", ignoreCase = true) -> "DOCUMENT"
+                            else -> "FILE"
+                        }
+                        onAttachFile(bytes, name, type)
+                    }
+                }
+            } catch (_: Exception) {
+                Toast.makeText(context, "Could not open file", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    if (showAttachmentDialog) {
+        AlertDialog(
+            onDismissRequest = { showAttachmentDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.AttachFile,
+                        contentDescription = null,
+                        tint = CyberCyan
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Share with Community",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    AttachmentOptionRow(
+                        icon = Icons.Filled.PhotoCamera,
+                        title = "Live Camera",
+                        subtitle = "Capture and share photo",
+                        iconColor = CyberCyan,
+                        isDark = isDark,
+                        onClick = {
+                            showAttachmentDialog = false
+                            cameraLauncher.launch(null)
+                        }
+                    )
+                    AttachmentOptionRow(
+                        icon = Icons.Filled.Image,
+                        title = "Gallery / Photos",
+                        subtitle = "Select diagrams, photos from gallery",
+                        iconColor = ElectricBlue,
+                        isDark = isDark,
+                        onClick = {
+                            showAttachmentDialog = false
+                            galleryLauncher.launch("image/*")
+                        }
+                    )
+                    AttachmentOptionRow(
+                        icon = Icons.Filled.Description,
+                        title = "Documents & PDFs",
+                        subtitle = "Share PDF manuals, datasheets, reports",
+                        iconColor = CircuitSuccess,
+                        isDark = isDark,
+                        onClick = {
+                            showAttachmentDialog = false
+                            documentLauncher.launch("*/*")
+                        }
+                    )
+                    AttachmentOptionRow(
+                        icon = Icons.Filled.FolderZip,
+                        title = "Files & Archives",
+                        subtitle = "Share code, zip, or project files",
+                        iconColor = CircuitWarning,
+                        isDark = isDark,
+                        onClick = {
+                            showAttachmentDialog = false
+                            documentLauncher.launch("*/*")
+                        }
+                    )
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showAttachmentDialog = false }) {
+                    Text(
+                        text = "Cancel",
+                        color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                    )
+                }
+            },
+            containerColor = if (isDark) DarkSurfaceElevated else LightSurface,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -535,18 +820,97 @@ fun ChatInputBar(
                 )
             }
         }
+
+        // Pending attachment preview
+        if (pendingAttachmentBytes != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isDark) DarkSurfaceElevated else LightSurfaceBorder.copy(alpha = 0.45f))
+                    .border(1.dp, CyberCyan.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val icon = when (pendingAttachmentType) {
+                    "IMAGE" -> Icons.Filled.Image
+                    "DOCUMENT" -> Icons.Filled.Description
+                    else -> Icons.Filled.InsertDriveFile
+                }
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(CyberCyan.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = CyberCyan,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = pendingAttachmentName.ifBlank { "Attached file" },
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = if (isDark) TextPrimaryDark else TextPrimaryLight,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "${(pendingAttachmentBytes.size / 1024).coerceAtLeast(1)} KB • Ready to send",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = CyberCyan
+                    )
+                }
+                IconButton(
+                    onClick = onClearAttachment,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Remove attachment",
+                        tint = CircuitError,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 10.dp, vertical = 8.dp)
         ) {
+            // Attachment Button
+            IconButton(
+                onClick = { showAttachmentDialog = true },
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(if (isDark) DarkSurfaceElevated else LightSurfaceBorder.copy(alpha = 0.35f))
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.AttachFile,
+                    contentDescription = "Attach file or photo",
+                    tint = if (isDark) CyberCyan else ElectricBlue,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
             OutlinedTextField(
                 value = text,
                 onValueChange = onTextChanged,
                 placeholder = {
                     Text(
-                        text = "Type a message...",
+                        text = if (pendingAttachmentBytes != null) "Add caption (optional)..." else "Type a message...",
                         style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                         color = if (isDark) TextSecondaryDark else TextSecondaryLight
                     )
@@ -569,7 +933,7 @@ fun ChatInputBar(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            val canSend = text.isNotBlank() && !isSending
+            val canSend = (text.isNotBlank() || pendingAttachmentBytes != null) && !isSending
             Box(
                 modifier = Modifier
                     .size(44.dp)
@@ -599,3 +963,76 @@ fun ChatInputBar(
         }
     }
 }
+
+@Composable
+private fun AttachmentOptionRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    iconColor: Color,
+    isDark: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isDark) DarkSurface.copy(alpha = 0.8f) else LightSurfaceBorder.copy(alpha = 0.35f))
+            .clickable(onClick = onClick)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(iconColor.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = iconColor,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                color = if (isDark) TextPrimaryDark else TextPrimaryLight
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                color = if (isDark) TextSecondaryDark else TextSecondaryLight
+            )
+        }
+    }
+}
+
+private fun getFileNameFromUri(context: Context, uri: Uri): String? {
+    var result: String? = null
+    if (uri.scheme == "content") {
+        try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) {
+                        result = cursor.getString(index)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+    if (result.isNullOrBlank()) {
+        result = uri.path
+        val cut = result?.lastIndexOf('/') ?: -1
+        if (cut != -1) {
+            result = result?.substring(cut + 1)
+        }
+    }
+    return result
+}
+

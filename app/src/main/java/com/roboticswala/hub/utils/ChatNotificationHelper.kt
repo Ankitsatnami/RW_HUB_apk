@@ -24,6 +24,8 @@ object ChatNotificationHelper {
                 description = CHANNEL_DESC
                 enableLights(true)
                 enableVibration(true)
+                vibrationPattern = longArrayOf(0, 200, 100, 200)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
             }
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             manager?.createNotificationChannel(channel)
@@ -49,7 +51,7 @@ object ChatNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
 
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, flags)
+        val pendingIntent = PendingIntent.getActivity(context, (System.currentTimeMillis() % 10000).toInt(), intent, flags)
 
         val title = if (senderRole.isNotBlank()) "💬 $senderName ($senderRole)" else "💬 $senderName"
 
@@ -64,6 +66,7 @@ object ChatNotificationHelper {
             .setContentIntent(pendingIntent)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        manager?.notify(NOTIFICATION_ID, builder.build())
+        val notificationId = (System.currentTimeMillis() % 100000).toInt() + 1000
+        manager?.notify(notificationId, builder.build())
     }
 }

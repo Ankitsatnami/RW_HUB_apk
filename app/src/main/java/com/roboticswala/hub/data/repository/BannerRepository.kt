@@ -9,4 +9,5 @@ interface BannerRepository {
     fun addBanner(banner: AchievementBannerItem): Flow<Resource<Unit>>
     fun updateBanner(banner: AchievementBannerItem): Flow<Resource<Unit>>
     fun deleteBanner(bannerId: String): Flow<Resource<Unit>>
+    fun uploadBannerImage(imageBytes: ByteArray): Flow<Resource<String>>
 }

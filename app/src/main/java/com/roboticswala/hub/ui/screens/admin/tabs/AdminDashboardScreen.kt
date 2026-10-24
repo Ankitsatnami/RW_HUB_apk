@@ -62,9 +62,13 @@ import com.roboticswala.hub.ui.theme.TextSecondaryDark
 import androidx.compose.foundation.clickable
 import com.roboticswala.hub.ui.theme.TextSecondaryLight
 
+import com.roboticswala.hub.data.models.AchievementBannerItem
+import com.roboticswala.hub.ui.components.AchievementBannerCarousel
+
 @Composable
 fun AdminDashboardScreen(
     data: AdminDashboardData,
+    banners: List<AchievementBannerItem> = emptyList(),
     onNavigateToStudents: (filter: String) -> Unit = {},
     onNavigateToAttendance: () -> Unit = {},
     onNavigateToBookings: () -> Unit = {},
@@ -72,6 +76,7 @@ fun AdminDashboardScreen(
     onNavigateToEquipment: () -> Unit = {},
     onNavigateToMore: () -> Unit = {},
     onNavigateToChat: () -> Unit = {},
+    onNavigateToAchievements: () -> Unit = {},
     unreadChatCount: Int = 0,
     modifier: Modifier = Modifier
 ) {
@@ -139,6 +144,16 @@ fun AdminDashboardScreen(
         }
 
         Spacer(modifier = Modifier.height(14.dp))
+
+        // ── Continuous Sliding Achievement Banner Carousel ───
+        if (banners.isNotEmpty()) {
+            AchievementBannerCarousel(
+                banners = banners,
+                isDark = isDark,
+                onNavigateToAchievements = onNavigateToAchievements
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+        }
 
         // Community Group Chat & Live Discussion Alert Card
         Card(

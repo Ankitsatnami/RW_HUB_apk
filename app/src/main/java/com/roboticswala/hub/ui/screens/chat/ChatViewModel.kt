@@ -28,6 +28,10 @@ data class ChatUiState(
     val currentUserRole: String = "STUDENT",
     val currentUserPhotoUrl: String = "",
     val typingUsers: List<String> = emptyList(),
+    val pendingAttachmentBytes: ByteArray? = null,
+    val pendingAttachmentName: String = "",
+    val pendingAttachmentType: String = "",
+    val pendingAttachmentPreviewUri: String = "",
     val error: String? = null
 )
 
@@ -140,26 +144,70 @@ class ChatViewModel(
         }
     }
 
+    fun setPendingAttachment(bytes: ByteArray, name: String, type: String, previewUri: String = "") {
+        _uiState.update {
+            it.copy(
+                pendingAttachmentBytes = bytes,
+                pendingAttachmentName = name,
+                pendingAttachmentType = type,
+                pendingAttachmentPreviewUri = previewUri
+            )
+        }
+    }
+
+    fun clearPendingAttachment() {
+        _uiState.update {
+            it.copy(
+                pendingAttachmentBytes = null,
+                pendingAttachmentName = "",
+                pendingAttachmentType = "",
+                pendingAttachmentPreviewUri = ""
+            )
+        }
+    }
+
     fun sendMessage() {
         val text = _uiState.value.inputText.trim()
-        if (text.isBlank() || _uiState.value.isSending) return
+        val hasAttachment = _uiState.value.pendingAttachmentBytes != null
+        if ((text.isBlank() && !hasAttachment) || _uiState.value.isSending) return
 
         val state = _uiState.value
         typingJob?.cancel()
         repository.setTypingStatus(state.currentUserId, state.currentUserName, false)
 
-        val newMsg = ChatMessage(
-            senderId = state.currentUserId,
-            senderName = state.currentUserName,
-            senderRole = state.currentUserRole,
-            senderPhotoUrl = state.currentUserPhotoUrl,
-            message = text,
-            clientTimeMillis = System.currentTimeMillis()
-        )
+        val attachmentBytes = state.pendingAttachmentBytes
+        val attachmentName = state.pendingAttachmentName
+        val attachmentType = state.pendingAttachmentType
 
-        _uiState.update { it.copy(inputText = "", isSending = true) }
+        _uiState.update {
+            it.copy(
+                inputText = "",
+                pendingAttachmentBytes = null,
+                pendingAttachmentName = "",
+                pendingAttachmentType = "",
+                pendingAttachmentPreviewUri = "",
+                isSending = true
+            )
+        }
 
         viewModelScope.launch {
+            var uploadedUrl = ""
+            if (attachmentBytes != null) {
+                uploadedUrl = repository.uploadChatAttachment(attachmentBytes, attachmentName).orEmpty()
+            }
+
+            val newMsg = ChatMessage(
+                senderId = state.currentUserId,
+                senderName = state.currentUserName,
+                senderRole = state.currentUserRole,
+                senderPhotoUrl = state.currentUserPhotoUrl,
+                message = text.ifBlank { if (attachmentType == "IMAGE") "📷 Photo" else "📄 $attachmentName" },
+                attachmentUrl = uploadedUrl,
+                attachmentType = attachmentType,
+                attachmentName = attachmentName,
+                clientTimeMillis = System.currentTimeMillis()
+            )
+
             val success = repository.sendMessage(newMsg)
             _uiState.update { it.copy(isSending = false) }
             if (!success) {

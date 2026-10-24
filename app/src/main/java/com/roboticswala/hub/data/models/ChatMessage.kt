@@ -10,6 +10,9 @@ data class ChatMessage(
     val senderRole: String = "STUDENT", // "ADMIN" or "STUDENT"
     val senderPhotoUrl: String = "",
     val message: String = "",
+    val attachmentUrl: String = "",
+    val attachmentType: String = "", // "IMAGE", "DOCUMENT", "FILE"
+    val attachmentName: String = "",
     @ServerTimestamp
     val timestamp: Date? = null,
     val clientTimeMillis: Long = System.currentTimeMillis()

@@ -148,8 +148,9 @@ fun AdminAnalyticsScreen(
                     1 -> item { ProjectsAndTasksTab(a = a, isDark = isDark) }
                     2 -> item { InventoryAndBudgetTab(a = a, isDark = isDark) }
                     3 -> item {
+                        val context = androidx.compose.ui.platform.LocalContext.current
                         ReportsAndExportTab(
-                            onExport = { viewModel.exportReport(it) },
+                            onExport = { viewModel.exportReport(context, it) },
                             isExporting = uiState.isExporting,
                             successMsg = uiState.exportSuccessMessage,
                             isDark = isDark

@@ -20,8 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import com.roboticswala.hub.ui.theme.ThemeManager
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -246,6 +249,14 @@ fun AdminMainScreen(
                             }
                         }
 
+                        IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
+                            Icon(
+                                imageVector = if (isDark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                                contentDescription = "Toggle Theme",
+                                tint = if (isDark) CyberCyan else ElectricBlue
+                            )
+                        }
+
                         IconButton(onClick = onLogout) {
                             Icon(
                                 imageVector = Icons.Filled.Logout,
@@ -329,6 +340,7 @@ fun AdminMainScreen(
                 when (uiState.selectedTab) {
                     AdminNavRoute.Dashboard.route -> AdminDashboardScreen(
                         data = uiState.dashboardData,
+                        banners = uiState.banners,
                         onNavigateToStudents = { filter ->
                             viewModel.setStudentsFilter(filter)
                             viewModel.onTabSelected(AdminNavRoute.Students.route)
@@ -339,6 +351,7 @@ fun AdminMainScreen(
                         onNavigateToEquipment = { viewModel.onTabSelected(AdminNavRoute.More.route, subScreen = "equipment", returnToDashboard = true) },
                         onNavigateToMore = { viewModel.onTabSelected(AdminNavRoute.More.route) },
                         onNavigateToChat = onNavigateToChat,
+                        onNavigateToAchievements = { viewModel.onTabSelected(AdminNavRoute.More.route, subScreen = "achievements", returnToDashboard = true) },
                         unreadChatCount = unreadCount
                     )
                     AdminNavRoute.Attendance.route -> AdminAttendanceScreen()

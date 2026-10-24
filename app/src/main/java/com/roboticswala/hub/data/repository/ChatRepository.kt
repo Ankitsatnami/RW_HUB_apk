@@ -5,13 +5,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.roboticswala.hub.data.models.ChatMessage
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class ChatRepository(
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ) {
     private val chatCollection = firestore.collection("community_chats")
     private val typingCollection = firestore.collection("community_chat_typing")
@@ -93,6 +95,17 @@ class ChatRepository(
             true
         } catch (e: Exception) {
             false
+        }
+    }
+
+    suspend fun uploadChatAttachment(fileBytes: ByteArray, fileName: String): String? {
+        return try {
+            val safeName = "${System.currentTimeMillis()}_${fileName.replace("[^a-zA-Z0-9._-]".toRegex(), "_")}"
+            val ref = storage.reference.child("chat_attachments/$safeName")
+            ref.putBytes(fileBytes).await()
+            ref.downloadUrl.await().toString()
+        } catch (e: Exception) {
+            null
         }
     }
 

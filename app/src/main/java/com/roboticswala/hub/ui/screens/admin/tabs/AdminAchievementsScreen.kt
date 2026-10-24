@@ -27,6 +27,13 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -285,7 +292,8 @@ fun AdminAchievementsScreen(
             onDismiss = viewModel::closeBannerModal,
             onSelectBanner = viewModel::selectBannerForEdit,
             onSaveBanner = viewModel::saveBanner,
-            onDeleteBanner = viewModel::deleteBanner
+            onDeleteBanner = viewModel::deleteBanner,
+            onUploadImage = viewModel::uploadBannerImage
         )
     }
 }
@@ -490,9 +498,11 @@ fun AdminBannerManagementDialog(
     onDismiss: () -> Unit,
     onSelectBanner: (AchievementBannerItem?) -> Unit,
     onSaveBanner: (AchievementBannerItem) -> Unit,
-    onDeleteBanner: (String) -> Unit
+    onDeleteBanner: (String) -> Unit,
+    onUploadImage: (ByteArray, (String) -> Unit) -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
+    val context = LocalContext.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     
     // Form States
@@ -503,6 +513,28 @@ fun AdminBannerManagementDialog(
     var date by remember(selectedBanner) { mutableStateOf(selectedBanner?.date ?: "") }
     var imageUrl by remember(selectedBanner) { mutableStateOf(selectedBanner?.imageUrl ?: "") }
     var description by remember(selectedBanner) { mutableStateOf(selectedBanner?.description ?: "") }
+    var isUploadingImage by remember { mutableStateOf(false) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                isUploadingImage = true
+                val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                if (bytes != null && bytes.isNotEmpty()) {
+                    onUploadImage(bytes) { uploadedUrl ->
+                        imageUrl = uploadedUrl
+                        isUploadingImage = false
+                    }
+                } else {
+                    isUploadingImage = false
+                }
+            } catch (e: Exception) {
+                isUploadingImage = false
+            }
+        }
+    }
 
     val isEditing = selectedBanner != null
     val isFormOpen = isEditing || (selectedBanner?.id == "")
@@ -510,31 +542,124 @@ fun AdminBannerManagementDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = if (isFormOpen) (if (selectedBanner?.id?.isBlank() == true) "Add New Banner" else "Edit Banner") else "Manage Live Banners", 
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+            Text(
+                text = if (isFormOpen) (if (selectedBanner?.id?.isBlank() == true) "Add New Banner" else "Edit Banner") else "Manage Live Banners", 
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
         },
         text = {
             if (isFormOpen) {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item { RoboticsTextField(value = title, onValueChange = { title = it }, label = "Title *", placeholder = "e.g., 1st Place - Hackathon") }
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    item {
+                        RoboticsTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = "Title *",
+                            placeholder = "e.g., 1st Place - Hackathon"
+                        )
+                    }
+
+                    // DIRECT IMAGE UPLOAD SECTION (NO URL / DRIVE LINK REQUIRED)
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isDark) DarkSurfaceElevated else LightSurfaceElevated)
+                                .border(1.dp, if (isDark) DarkSurfaceBorder else LightSurfaceBorder, RoundedCornerShape(12.dp))
+                                .padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Banner Image (Direct Device Upload) *",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = if (isDark) CyberCyan else ElectricBlue,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            if (imageUrl.isNotBlank()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(130.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .border(1.dp, CyberCyan.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                ) {
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = "Selected Banner Preview",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            if (isUploadingImage) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.padding(vertical = 6.dp)
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = if (isDark) CyberCyan else ElectricBlue,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Text(
+                                        text = "Uploading Image to Cloud...",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (isDark) CyberCyan else ElectricBlue
+                                    )
+                                }
+                            } else {
+                                RoboticsOutlinedButton(
+                                    text = if (imageUrl.isBlank()) "📁 Select Image from Device" else "📸 Change / Replace Image",
+                                    onClick = { imagePickerLauncher.launch("image/*") },
+                                    leadingIcon = Icons.Filled.AddPhotoAlternate
+                                )
+                            }
+                        }
+                    }
+
                     item { RoboticsTextField(value = badge, onValueChange = { badge = it }, label = "Badge", placeholder = "e.g., 🥇 1st Prize Gold") }
                     item { RoboticsTextField(value = category, onValueChange = { category = it }, label = "Category", placeholder = "e.g., Drone Hackathon") }
                     item { RoboticsTextField(value = team, onValueChange = { team = it }, label = "Team", placeholder = "e.g., Team AeroRobotics") }
                     item { RoboticsTextField(value = date, onValueChange = { date = it }, label = "Date", placeholder = "YYYY-MM-DD") }
-                    item { RoboticsTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = "Image URL *", placeholder = "https://...") }
                     item { RoboticsTextField(value = description, onValueChange = { description = it }, label = "Description", placeholder = "Short description...") }
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(banners) { banner ->
                         Card(
-                            modifier = Modifier.fillMaxWidth().clickable { onSelectBanner(banner) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelectBanner(banner) },
                             colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated),
                             border = androidx.compose.foundation.BorderStroke(1.dp, if (isDark) DarkSurfaceBorder else LightSurfaceBorder)
                         ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(text = banner.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = textColor)
-                                Text(text = banner.team, fontSize = 12.sp, color = textColor.copy(alpha = 0.7f))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                if (banner.imageUrl.isNotBlank()) {
+                                    AsyncImage(
+                                        model = banner.imageUrl,
+                                        contentDescription = banner.title,
+                                        modifier = Modifier
+                                            .size(54.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = banner.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = textColor)
+                                    Text(text = banner.team, fontSize = 12.sp, color = textColor.copy(alpha = 0.7f))
+                                }
                             }
                         }
                     }
@@ -556,8 +681,8 @@ fun AdminBannerManagementDialog(
                             )
                         )
                     },
-                    isLoading = isLoading,
-                    enabled = title.isNotBlank() && imageUrl.isNotBlank()
+                    isLoading = isLoading || isUploadingImage,
+                    enabled = title.isNotBlank() && imageUrl.isNotBlank() && !isUploadingImage
                 )
             } else {
                 RoboticsPrimaryButton(text = "Add New Banner", onClick = { onSelectBanner(AchievementBannerItem(id = "")) })

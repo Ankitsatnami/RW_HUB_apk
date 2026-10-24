@@ -677,7 +677,7 @@ fun AdminMoreScreen(
                 title = "Gate Access",
                 subtitle = "Biometric & RFID log",
                 icon = Icons.Filled.Security,
-                badge = "Security",
+                badge = "Coming Soon",
                 isDark = isDark,
                 onClick = { showingGateLog = true }
             )
@@ -686,7 +686,7 @@ fun AdminMoreScreen(
                 title = "Lab Config",
                 subtitle = "Operating hours & bays",
                 icon = Icons.Filled.Tune,
-                badge = "Settings",
+                badge = "Coming Soon",
                 isDark = isDark,
                 onClick = { showingLabConfig = true }
             )
@@ -727,22 +727,36 @@ fun AdminMoreScreen(
         AlertDialog(
             onDismissRequest = { showingGateLog = false },
             title = {
-                Text(
-                    text = "🔒 RFID Gate & Security Logs",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isDark) CyberCyan else ElectricBlue
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "🔒 Gate Access",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = if (isDark) CyberCyan else ElectricBlue
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(CircuitWarning.copy(alpha = 0.2f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "COMING SOON",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                            color = CircuitWarning
+                        )
+                    }
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Real-time RFID barrier status: ONLINE",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        text = "🚧 Coming Soon!",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                         color = if (isDark) TextPrimaryDark else TextPrimaryLight
                     )
                     Text(
-                        text = "• Main Bay Turnstile: 🟢 Normal Access Enabled\n• Hardware Lab Door #1: 🟢 RFID Active\n• Robotics Testing Arena: 🟢 Monitored\n• Last biometric pulse: 12 seconds ago",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "This feature is currently under active development. Automatic RFID turnstile barrier sync, biometric student gate attendance logs, and hardware NFC door controllers will be enabled in the upcoming release.",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = if (isDark) TextSecondaryDark else TextSecondaryLight
                     )
                 }
@@ -765,22 +779,36 @@ fun AdminMoreScreen(
         AlertDialog(
             onDismissRequest = { showingLabConfig = false },
             title = {
-                Text(
-                    text = "⚙️ Robotics Lab Preferences",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isDark) CyberCyan else ElectricBlue
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "⚙️ Lab Config",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = if (isDark) CyberCyan else ElectricBlue
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(CircuitWarning.copy(alpha = 0.2f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "COMING SOON",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                            color = CircuitWarning
+                        )
+                    }
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Facility Operating Parameters:",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        text = "🚧 Coming Soon!",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                         color = if (isDark) TextPrimaryDark else TextPrimaryLight
                     )
                     Text(
-                        text = "• Station Operating Hours: 08:00 AM - 08:00 PM\n• Max Slot Booking Duration: 4 Hours\n• Machine Quota: 2 Workbenches / Student\n• 3D Printing Auto-Shutdown: 09:00 PM\n• Auto-Attendance Grace Period: 15 Mins",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "This feature is currently under active development. Lab bay operating hours, machine quotas, 3D printer auto-shutdown rules, and smart switch IoT preferences will be configurable in the upcoming release.",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = if (isDark) TextSecondaryDark else TextSecondaryLight
                     )
                 }
@@ -788,7 +816,7 @@ fun AdminMoreScreen(
             confirmButton = {
                 TextButton(onClick = { showingLabConfig = false }) {
                     Text(
-                        text = "Done",
+                        text = "Close",
                         color = if (isDark) CyberCyan else ElectricBlue,
                         fontWeight = FontWeight.Bold
                     )

@@ -16,6 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import com.roboticswala.hub.ui.theme.ThemeManager
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -162,25 +165,10 @@ fun StudentMainScreen(
                 TopAppBar(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        if (isDark) DarkSurfaceElevated else LightSurfaceBorder.copy(alpha = 0.5f)
-                                    )
-                                    .border(
-                                        1.dp,
-                                        if (isDark) DarkSurfaceBorder else LightSurfaceBorder,
-                                        RoundedCornerShape(10.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "🤖",
-                                    fontSize = 18.sp
-                                )
-                            }
+                            RoboticsLogo(
+                                size = 32.dp,
+                                animate = false
+                            )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
@@ -226,6 +214,13 @@ fun StudentMainScreen(
                                     tint = if (isDark) CyberCyan else ElectricBlue
                                 )
                             }
+                        }
+                        IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
+                            Icon(
+                                imageVector = if (isDark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                                contentDescription = "Toggle Theme",
+                                tint = if (isDark) CyberCyan else ElectricBlue
+                            )
                         }
                         IconButton(onClick = onLogout) {
                             Icon(

@@ -60,15 +60,28 @@ class AdminAnalyticsViewModel(
         }
     }
 
-    fun exportReport(reportType: String) {
+    fun exportReport(context: android.content.Context, reportType: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isExporting = true) }
-            kotlinx.coroutines.delay(1200) // Simulated PDF generator
-            _uiState.update {
-                it.copy(
-                    isExporting = false,
-                    exportSuccessMessage = "$reportType report compiled and saved to Documents/RoboticsWalaHub_${System.currentTimeMillis()}.pdf"
-                )
+            val result = com.roboticswala.hub.utils.PdfReportExporter.exportReportToStorage(
+                context = context,
+                reportTitle = reportType,
+                analytics = _uiState.value.analytics
+            )
+            result.onSuccess { savedPath ->
+                _uiState.update {
+                    it.copy(
+                        isExporting = false,
+                        exportSuccessMessage = "✅ Successfully saved PDF to device storage:\n$savedPath"
+                    )
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(
+                        isExporting = false,
+                        errorMessage = "Failed to export PDF: ${err.localizedMessage}"
+                    )
+                }
             }
         }
     }

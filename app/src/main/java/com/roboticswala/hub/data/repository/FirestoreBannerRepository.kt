@@ -1,6 +1,7 @@
 package com.roboticswala.hub.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.roboticswala.hub.data.models.AchievementBannerItem
 import com.roboticswala.hub.utils.Resource
 import kotlinx.coroutines.channels.awaitClose
@@ -11,7 +12,8 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class FirestoreBannerRepository(
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ) : BannerRepository {
 
     private val bannersCollection = firestore.collection("banners")
@@ -65,6 +67,19 @@ class FirestoreBannerRepository(
             emit(Resource.Success(Unit))
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Failed to delete banner"))
+        }
+    }
+
+    override fun uploadBannerImage(imageBytes: ByteArray): Flow<Resource<String>> = flow {
+        emit(Resource.Loading())
+        try {
+            val fileName = "banner_${UUID.randomUUID()}.jpg"
+            val ref = storage.reference.child("banners/$fileName")
+            ref.putBytes(imageBytes).await()
+            val url = ref.downloadUrl.await().toString()
+            emit(Resource.Success(url))
+        } catch (e: Exception) {
+            emit(Resource.Error(e.message ?: "Failed to upload image: ${e.localizedMessage}"))
         }
     }
 }

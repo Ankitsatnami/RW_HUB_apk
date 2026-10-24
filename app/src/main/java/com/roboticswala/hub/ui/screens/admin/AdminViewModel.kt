@@ -12,6 +12,9 @@ import com.roboticswala.hub.data.models.UserProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.roboticswala.hub.data.models.AchievementBannerItem
+import com.roboticswala.hub.data.repository.BannerRepository
+import com.roboticswala.hub.data.repository.FirestoreBannerRepository
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -20,6 +23,7 @@ data class AdminUiState(
     val dashboardData: AdminDashboardData = AdminDashboardData(),
     val studentsList: List<StudentDirectoryItem> = emptyList(),
     val bookingsList: List<BookingRequestItem> = emptyList(),
+    val banners: List<AchievementBannerItem> = emptyList(),
     val adminProfile: UserProfile? = null,
     val selectedTab: String = "admin_dashboard",
     val selectedSubScreen: String? = null,
@@ -31,7 +35,8 @@ data class AdminUiState(
 
 class AdminViewModel(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val bannerRepository: BannerRepository = FirestoreBannerRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminUiState())
@@ -51,6 +56,15 @@ class AdminViewModel(
         observeFirestoreProjects()
         observeFirestoreAttendance()
         observeFirestoreEquipment()
+        observeBanners()
+    }
+
+    private fun observeBanners() {
+        viewModelScope.launch {
+            bannerRepository.observeBanners().collect { list ->
+                _uiState.update { it.copy(banners = list) }
+            }
+        }
     }
 
     private fun observeCurrentAdminProfile() {
