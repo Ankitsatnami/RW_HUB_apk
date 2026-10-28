@@ -11,9 +11,9 @@ Daemon will be stopped at the end of the build
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests
+> Task :app:mergeDebugResources
 > Task :app:extractDeepLinksDebug
 > Task :app:parseDebugLocalResources
-> Task :app:mergeDebugResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:javaPreCompileDebug
@@ -22,8 +22,8 @@ Daemon will be stopped at the end of the build
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets
 > Task :app:processDebugManifestForPackage
-> Task :app:desugarDebugFileDependencies
 > Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
 > Task :app:mergeDebugJniLibFolders
 > Task :app:checkDebugDuplicateClasses
 > Task :app:mergeDebugNativeLibs
@@ -39,41 +39,9 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:mergeExtDexDebug
 
 > Task :app:compileDebugKotlin FAILED
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:143:26 Unresolved reference 'shadow'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:153:37 Unresolved reference 'Brush'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:168:42 Unresolved reference 'shadow'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:178:53 Unresolved reference 'Brush'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:190:33 Unresolved reference 'Column'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:191:37 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:193:63 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:199:37 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:201:63 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:315:26 Unresolved reference 'shadow'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:324:37 Unresolved reference 'Brush'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminDashboardScreen.kt:161:18 Unresolved reference 'androidx'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:908:29 Unresolved reference 'Color'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:915:22 Unresolved reference 'heightIn'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:940:43 Unresolved reference 'CircleShape'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:981:53 Unresolved reference 'DarkSurfaceElevated'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1043:56 Unresolved reference 'DarkSurfaceElevated'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1186:87 Unresolved reference 'DarkSurfaceElevated'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1214:58 Unresolved reference 'Color'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1218:114 Unresolved reference 'Color'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1309:78 Unresolved reference 'Color'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1309:109 Unresolved reference 'Color'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1323:49 Unresolved reference 'Color'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1338:53 Unresolved reference 'DarkSurfaceElevated'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:147:23 Unresolved reference 'launch'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:148:77 Suspend function 'suspend fun saveToDownloads(context: Context, fileName: String, fileUrlOrBase64: String, mimeType: String = ...): Result<String>' should be called only from a coroutine or another suspend function.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:353:43 Unresolved reference 'launch'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:355:87 Suspend function 'suspend fun saveToDownloads(context: Context, fileName: String, fileUrlOrBase64: String, mimeType: String = ...): Result<String>' should be called only from a coroutine or another suspend function.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:168:26 Unresolved reference 'fillMaxWidth'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:179:37 Unresolved reference 'Brush'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:194:42 Unresolved reference 'shadow'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:204:53 Unresolved reference 'Brush'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:285:26 Unresolved reference 'fillMaxWidth'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:295:37 Unresolved reference 'Brush'.
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1793151882325.json
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:23:37 Conflicting import: imported name 'Color' is ambiguous.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:60:37 Conflicting import: imported name 'Color' is ambiguous.
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1793152708319.json
 
 FAILURE: Build failed with an exception.
 
@@ -118,6 +86,35 @@ org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:com
 	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:111)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:138)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:123)
+	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
+	at org.gradle.execution.DryRunBuildExecutionAction.execute(DryRunBuildExecutionAction.java:51)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$10(DefaultBuildLifecycleController.java:313)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$8(StateTransitionController.java:177)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:177)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:304)
+	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:220)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:181)
+	at org.gradle.composite.internal.DefaultBuildController.access$000(DefaultBuildController.java:50)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:198)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:198)
 	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
 	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
 Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionException: A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
@@ -242,6 +239,35 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:111)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:138)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:123)
+	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
+	at org.gradle.execution.DryRunBuildExecutionAction.execute(DryRunBuildExecutionAction.java:51)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$10(DefaultBuildLifecycleController.java:313)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$8(StateTransitionController.java:177)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:177)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:304)
+	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:220)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:181)
+	at org.gradle.composite.internal.DefaultBuildController.access$000(DefaultBuildController.java:50)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:198)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:198)
 	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
 	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
 Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilation error. See log for more details
@@ -277,5 +303,5 @@ Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilat
 	... 2 more
 
 
-BUILD FAILED in 45s
+BUILD FAILED in 36s
 29 actionable tasks: 29 executed
