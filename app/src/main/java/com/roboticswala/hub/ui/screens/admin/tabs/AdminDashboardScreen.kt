@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -158,7 +159,7 @@ fun AdminDashboardScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .androidx.compose.ui.draw.shadow(
+                .shadow(
                     elevation = 8.dp,
                     shape = RoundedCornerShape(18.dp),
                     ambientColor = if (isDark) CyberCyan.copy(alpha = 0.22f) else ElectricBlue.copy(alpha = 0.15f),
