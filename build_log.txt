@@ -1,15 +1,3 @@
-Downloading https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
-.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
-
-Welcome to Gradle 8.10.2!
-
-Here are the highlights of this release:
- - Support for Java 23
- - Faster configuration cache
- - Better configuration cache reports
-
-For more details see https://docs.gradle.org/8.10.2/release-notes.html
-
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
 > Task :app:preBuild UP-TO-DATE
@@ -17,15 +5,15 @@ Daemon will be stopped at the end of the build
 > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
 > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :app:generateDebugResValues
-> Task :app:processDebugGoogleServices
 > Task :app:checkDebugAarMetadata
+> Task :app:processDebugGoogleServices
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
-> Task :app:mergeDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
 > Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:javaPreCompileDebug
@@ -36,22 +24,56 @@ Daemon will be stopped at the end of the build
 > Task :app:processDebugManifestForPackage
 > Task :app:desugarDebugFileDependencies
 > Task :app:compressDebugAssets
-> Task :app:processDebugResources
+> Task :app:mergeDebugJniLibFolders
 > Task :app:checkDebugDuplicateClasses
-> Task :app:compileDebugKotlin
+> Task :app:mergeDebugNativeLibs
+> Task :app:mergeLibDexDebug
+> Task :app:processDebugResources
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libbarhopper_v3.so, libimage_processing_util_jni.so, libsurface_util_jni.so.
+
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
 > Task :app:mergeExtDexDebug
 
-> Task :app:compileDebugKotlin
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:739:41 Unresolved reference 'CircuitWarning'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:745:37 Unresolved reference 'CircuitWarning'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:791:41 Unresolved reference 'CircuitWarning'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:797:37 Unresolved reference 'CircuitWarning'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/utils/PdfReportExporter.kt:107:109 Unresolved reference 'remainingBudget'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/utils/PdfReportExporter.kt:108:72 Unresolved reference 'totalExpensesCount'.
-e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/utils/PdfReportExporter.kt:109:75 Unresolved reference 'pendingExpensesCount'.
-
 > Task :app:compileDebugKotlin FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1792855595342.json
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:143:26 Unresolved reference 'shadow'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:153:37 Unresolved reference 'Brush'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:168:42 Unresolved reference 'shadow'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:178:53 Unresolved reference 'Brush'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:190:33 Unresolved reference 'Column'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:191:37 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:193:63 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:199:37 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:201:63 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:315:26 Unresolved reference 'shadow'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/AdminMainScreen.kt:324:37 Unresolved reference 'Brush'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminDashboardScreen.kt:161:18 Unresolved reference 'androidx'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:908:29 Unresolved reference 'Color'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:915:22 Unresolved reference 'heightIn'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:940:43 Unresolved reference 'CircleShape'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:981:53 Unresolved reference 'DarkSurfaceElevated'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1043:56 Unresolved reference 'DarkSurfaceElevated'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1186:87 Unresolved reference 'DarkSurfaceElevated'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1214:58 Unresolved reference 'Color'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1218:114 Unresolved reference 'Color'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1309:78 Unresolved reference 'Color'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1309:109 Unresolved reference 'Color'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1323:49 Unresolved reference 'Color'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/admin/tabs/AdminMoreScreen.kt:1338:53 Unresolved reference 'DarkSurfaceElevated'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:147:23 Unresolved reference 'launch'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:148:77 Suspend function 'suspend fun saveToDownloads(context: Context, fileName: String, fileUrlOrBase64: String, mimeType: String = ...): Result<String>' should be called only from a coroutine or another suspend function.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:353:43 Unresolved reference 'launch'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/chat/CommunityChatScreen.kt:355:87 Suspend function 'suspend fun saveToDownloads(context: Context, fileName: String, fileUrlOrBase64: String, mimeType: String = ...): Result<String>' should be called only from a coroutine or another suspend function.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:168:26 Unresolved reference 'fillMaxWidth'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:179:37 Unresolved reference 'Brush'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:194:42 Unresolved reference 'shadow'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:204:53 Unresolved reference 'Brush'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:285:26 Unresolved reference 'fillMaxWidth'.
+e: file:///home/runner/work/RW_HUB_apk/RW_HUB_apk/app/src/main/java/com/roboticswala/hub/ui/screens/student/StudentMainScreen.kt:295:37 Unresolved reference 'Brush'.
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1793151882325.json
 
 FAILURE: Build failed with an exception.
 
@@ -255,5 +277,5 @@ Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilat
 	... 2 more
 
 
-BUILD FAILED in 2m 46s
-22 actionable tasks: 22 executed
+BUILD FAILED in 45s
+29 actionable tasks: 29 executed
