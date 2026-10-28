@@ -39,15 +39,18 @@ class FirebaseAuthRepository(
             } catch (e: Exception) {
                 0
             }
-            val autoStudentId = String.format(java.util.Locale.getDefault(), "RWH-%d-%03d", currentYear, userCount + 1)
+            val isFirstUser = userCount == 0
+            val autoStudentId = if (isFirstUser) "ADMIN-001" else String.format(java.util.Locale.getDefault(), "RWH-%d-%03d", currentYear, userCount + 1)
 
             val profile = UserProfile(
                 uid = firebaseUser.uid,
                 studentId = autoStudentId,
                 fullName = fullName.trim(),
                 email = email.trim(),
-                role = "Student",
-                status = "Pending",
+                role = if (isFirstUser) "Admin" else "Student",
+                status = if (isFirstUser) "Approved" else "Pending",
+                adminPosition = if (isFirstUser) "Main Super Admin" else "",
+                isMainAdmin = isFirstUser,
                 phone = phone.trim(),
                 parentName = parentName.trim(),
                 parentPhone = parentPhone.trim(),
