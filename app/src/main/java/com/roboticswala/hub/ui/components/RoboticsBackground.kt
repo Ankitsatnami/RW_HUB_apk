@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.roboticswala.hub.ui.theme.CyberCyan
 import com.roboticswala.hub.ui.theme.DarkBackground
 import com.roboticswala.hub.ui.theme.ElectricBlue
+import com.roboticswala.hub.ui.theme.LocalThemeIsDark
 import com.roboticswala.hub.ui.theme.LightBackground
 
 /**
@@ -24,7 +25,7 @@ fun RoboticsBackground(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val bgColor = if (isDark) DarkBackground else LightBackground
     val gridLineColor = if (isDark) ElectricBlue.copy(alpha = 0.04f) else ElectricBlue.copy(alpha = 0.035f)
     val dotColor = if (isDark) CyberCyan.copy(alpha = 0.12f) else ElectricBlue.copy(alpha = 0.10f)

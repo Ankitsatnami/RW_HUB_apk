@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.attendance
+﻿package com.roboticswala.hub.ui.screens.student.attendance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -76,7 +76,7 @@ fun StudentAttendanceHistoryScreen(
     onNavigateBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface
     val borderColor = if (isDark) DarkSurfaceBorder else LightSurfaceBorder

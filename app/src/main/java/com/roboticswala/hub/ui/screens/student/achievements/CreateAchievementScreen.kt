@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.achievements
+﻿package com.roboticswala.hub.ui.screens.student.achievements
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
@@ -88,7 +88,7 @@ fun CreateAchievementScreen(
     viewModel: CreateAchievementViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 

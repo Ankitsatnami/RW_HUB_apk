@@ -22,6 +22,8 @@ data class UserProfile(
     val aadharCardUrl: String = "",     // Aadhaar Card Document Image URL
     val aadharUploadedAt: Long = 0L,    // Timestamp when Aadhaar was uploaded
     val photoUrl: String = "",          // Firebase Storage URL or Base64
+    val adminPosition: String = "",     // e.g. "Lab Director", "Hardware Mentor", "Faculty In-Charge"
+    val isMainAdmin: Boolean = false,   // Main Super Admin
     val createdAt: Long = System.currentTimeMillis(),
     val approvedAt: Long = 0L           // Set when admin approves
 ) {
@@ -44,6 +46,8 @@ data class UserProfile(
             "aadharCardUrl" to aadharCardUrl,
             "aadharUploadedAt" to aadharUploadedAt,
             "photoUrl" to photoUrl,
+            "adminPosition" to adminPosition,
+            "isMainAdmin" to isMainAdmin,
             "createdAt" to createdAt,
             "approvedAt" to approvedAt
         )
@@ -106,6 +110,8 @@ data class UserProfile(
                 aadharCardUrl = map["aadharCardUrl"] as? String ?: "",
                 aadharUploadedAt = (map["aadharUploadedAt"] as? Number)?.toLong() ?: 0L,
                 photoUrl = map["photoUrl"] as? String ?: "",
+                adminPosition = map["adminPosition"] as? String ?: "",
+                isMainAdmin = (map["isMainAdmin"] as? Boolean) ?: false,
                 createdAt = (map["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis(),
                 approvedAt = (map["approvedAt"] as? Number)?.toLong() ?: 0L
             )

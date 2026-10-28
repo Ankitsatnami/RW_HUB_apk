@@ -80,7 +80,7 @@ fun AdminDashboardScreen(
     unreadChatCount: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val scrollState = rememberScrollState()
 
     Column(
@@ -146,26 +146,31 @@ fun AdminDashboardScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         // ── Continuous Sliding Achievement Banner Carousel ───
-        if (banners.isNotEmpty()) {
-            AchievementBannerCarousel(
-                banners = banners,
-                isDark = isDark,
-                onNavigateToAchievements = onNavigateToAchievements
-            )
-            Spacer(modifier = Modifier.height(14.dp))
-        }
+        AchievementBannerCarousel(
+            banners = banners,
+            isDark = isDark,
+            onNavigateToAchievements = onNavigateToAchievements,
+            onEditBanner = onNavigateToAchievements
+        )
+        Spacer(modifier = Modifier.height(14.dp))
 
-        // Community Group Chat & Live Discussion Alert Card
+        // Community Group Chat & Live Discussion Alert Card (Jar App Style Drop Shadow)
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .androidx.compose.ui.draw.shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(18.dp),
+                    ambientColor = if (isDark) CyberCyan.copy(alpha = 0.22f) else ElectricBlue.copy(alpha = 0.15f),
+                    spotColor = Color.Black.copy(alpha = 0.35f)
+                )
                 .border(
                     width = 1.dp,
                     color = if (unreadChatCount > 0) CircuitError else if (isDark) CyberCyan.copy(alpha = 0.5f) else ElectricBlue.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(18.dp)
                 )
                 .clickable(onClick = onNavigateToChat),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (unreadChatCount > 0) CircuitError.copy(alpha = 0.12f)
                 else if (isDark) DarkSurfaceElevated else LightSurfaceElevated

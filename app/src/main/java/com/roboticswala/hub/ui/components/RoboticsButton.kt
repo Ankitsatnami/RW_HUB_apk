@@ -64,7 +64,7 @@ fun RoboticsPrimaryButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     val scale = if (isPressed && enabled && !isLoading) 0.98f else 1.0f
 
@@ -152,7 +152,7 @@ fun RoboticsOutlinedButton(
     leadingIcon: ImageVector? = null,
     height: Dp = 52.dp
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val borderColor = if (isDark) CyberCyan.copy(alpha = 0.7f) else ElectricBlue.copy(alpha = 0.8f)
     val textColor = if (isDark) CyberCyan else ElectricBlue
 

@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.booking
+﻿package com.roboticswala.hub.ui.screens.student.booking
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -91,7 +91,7 @@ fun CreateBookingDialog(
     ) -> Unit
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val scrollState = rememberScrollState()
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface

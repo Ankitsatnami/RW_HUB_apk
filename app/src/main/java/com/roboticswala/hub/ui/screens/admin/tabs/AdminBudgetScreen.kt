@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.admin.tabs
+﻿package com.roboticswala.hub.ui.screens.admin.tabs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -79,7 +79,7 @@ fun AdminBudgetScreen(
     viewModel: AdminBudgetViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Column(
         modifier = modifier

@@ -29,8 +29,17 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PrecisionManufacturing
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.SupervisorAccount
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import com.roboticswala.hub.data.models.StudentDirectoryItem
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -81,6 +90,12 @@ import androidx.compose.runtime.LaunchedEffect
 fun AdminMoreScreen(
     onLogout: () -> Unit,
     adminProfile: UserProfile? = null,
+    adminsList: List<UserProfile> = emptyList(),
+    studentsList: List<StudentDirectoryItem> = emptyList(),
+    onPromoteToAdmin: (userId: String, position: String) -> Unit = { _, _ -> },
+    onUpdateAdminPosition: (userId: String, position: String) -> Unit = { _, _ -> },
+    onDemoteAdmin: (userId: String) -> Unit = {},
+    onPurgeLegacyRajguru: () -> Unit = {},
     onUpdateProfile: (fullName: String, phone: String, college: String, branch: String, year: String, adminId: String, emergencyContact: String) -> Unit = { _, _, _, _, _, _, _ -> },
     onUpdatePhoto: (photoBase64: String) -> Unit = {},
     onNavigateToChat: () -> Unit = {},
@@ -89,7 +104,7 @@ fun AdminMoreScreen(
     onSubScreenCleared: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val scrollState = rememberScrollState()
     var showingProfile by remember { mutableStateOf(false) }
     var showingProjects by remember { mutableStateOf(false) }
@@ -103,6 +118,7 @@ fun AdminMoreScreen(
     var showingAnalytics by remember { mutableStateOf(false) }
     var showingGateLog by remember { mutableStateOf(false) }
     var showingLabConfig by remember { mutableStateOf(false) }
+    var showingAdminManagement by remember { mutableStateOf(false) }
 
     val dismissSubScreen: () -> Unit = {
         showingProfile = false
@@ -117,12 +133,13 @@ fun AdminMoreScreen(
         showingAnalytics = false
         showingGateLog = false
         showingLabConfig = false
+        showingAdminManagement = false
         onSubScreenCleared()
     }
 
     val isAnySubScreenActive = showingProfile || showingProjects || showingTasks ||
             showingAchievements || showingNotices || showingEvents || showingEquipment ||
-            showingEquipmentRequests || showingBudget || showingAnalytics
+            showingEquipmentRequests || showingBudget || showingAnalytics || showingAdminManagement
 
     BackHandler(enabled = isAnySubScreenActive) {
         if (showingEquipmentRequests && showingEquipment) {
@@ -695,7 +712,7 @@ fun AdminMoreScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Row 6: Community & Discussion
+        // Row 6: Community & Admin Staff Management
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -709,7 +726,15 @@ fun AdminMoreScreen(
                 isDark = isDark,
                 onClick = onNavigateToChat
             )
-            Spacer(modifier = Modifier.weight(1f))
+            AdminGridTile(
+                modifier = Modifier.weight(1f),
+                title = "Manage Admins",
+                subtitle = "Roles & staff positions",
+                icon = Icons.Filled.SupervisorAccount,
+                badge = "${adminsList.size} Staff",
+                isDark = isDark,
+                onClick = { showingAdminManagement = true }
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -723,16 +748,36 @@ fun AdminMoreScreen(
         Spacer(modifier = Modifier.height(36.dp))
     }
 
+    // Admin & Staff Role Management Dialog
+    if (showingAdminManagement) {
+        AdminStaffManagementDialog(
+            adminsList = adminsList,
+            studentsList = studentsList,
+            onPromoteToAdmin = onPromoteToAdmin,
+            onUpdateAdminPosition = onUpdateAdminPosition,
+            onDemoteAdmin = onDemoteAdmin,
+            onPurgeLegacyRajguru = onPurgeLegacyRajguru,
+            onDismiss = { showingAdminManagement = false },
+            isDark = isDark
+        )
+    }
+
     // Gate Access & RFID Biometric Dialog
     if (showingGateLog) {
         AlertDialog(
             onDismissRequest = { showingGateLog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(
+                        imageVector = Icons.Filled.Security,
+                        contentDescription = null,
+                        tint = if (isDark) CyberCyan else ElectricBlue,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Text(
-                        text = "🔒 Gate Access",
+                        text = "Gate Access & Turnstile",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = if (isDark) CyberCyan else ElectricBlue
+                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
                     )
                     Box(
                         modifier = Modifier
@@ -741,7 +786,7 @@ fun AdminMoreScreen(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "COMING SOON",
+                            text = "NEXT RELEASE",
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
                             color = CircuitWarning
                         )
@@ -751,12 +796,12 @@ fun AdminMoreScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "🚧 Coming Soon!",
+                        text = "Hardware Integration in Progress",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                        color = if (isDark) CyberCyan else ElectricBlue
                     )
                     Text(
-                        text = "This feature is currently under active development. Automatic RFID turnstile barrier sync, biometric student gate attendance logs, and hardware NFC door controllers will be enabled in the upcoming release.",
+                        text = "Automatic RFID turnstile barrier sync, biometric student gate attendance logs, and hardware NFC door controllers will be enabled in the upcoming release.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (isDark) TextSecondaryDark else TextSecondaryLight
                     )
@@ -781,10 +826,16 @@ fun AdminMoreScreen(
             onDismissRequest = { showingLabConfig = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(
+                        imageVector = Icons.Filled.Tune,
+                        contentDescription = null,
+                        tint = if (isDark) CyberCyan else ElectricBlue,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Text(
-                        text = "⚙️ Lab Config",
+                        text = "Lab Operating Configuration",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = if (isDark) CyberCyan else ElectricBlue
+                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
                     )
                     Box(
                         modifier = Modifier
@@ -793,7 +844,7 @@ fun AdminMoreScreen(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "COMING SOON",
+                            text = "NEXT RELEASE",
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
                             color = CircuitWarning
                         )
@@ -803,12 +854,12 @@ fun AdminMoreScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "🚧 Coming Soon!",
+                        text = "IoT & Hardware Automation",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                        color = if (isDark) CyberCyan else ElectricBlue
                     )
                     Text(
-                        text = "This feature is currently under active development. Lab bay operating hours, machine quotas, 3D printer auto-shutdown rules, and smart switch IoT preferences will be configurable in the upcoming release.",
+                        text = "Lab bay operating hours, machine quotas, 3D printer auto-shutdown rules, and smart switch IoT preferences will be configurable in the upcoming release.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (isDark) TextSecondaryDark else TextSecondaryLight
                     )
@@ -825,6 +876,480 @@ fun AdminMoreScreen(
             },
             containerColor = if (isDark) DarkSurface else LightSurface
         )
+    }
+}
+
+@Composable
+fun AdminStaffManagementDialog(
+    adminsList: List<UserProfile>,
+    studentsList: List<StudentDirectoryItem>,
+    onPromoteToAdmin: (userId: String, position: String) -> Unit,
+    onUpdateAdminPosition: (userId: String, position: String) -> Unit,
+    onDemoteAdmin: (userId: String) -> Unit,
+    onPurgeLegacyRajguru: () -> Unit,
+    onDismiss: () -> Unit,
+    isDark: Boolean
+) {
+    var selectedStudentId by remember { mutableStateOf("") }
+    var selectedStudentName by remember { mutableStateOf("") }
+    var newPositionText by remember { mutableStateOf("") }
+    var editingAdminUid by remember { mutableStateOf<String?>(null) }
+    var editPositionText by remember { mutableStateOf("") }
+
+    val presetPositions = listOf("Lab Director", "Hardware Mentor", "Faculty In-Charge", "Inventory In-Charge", "Teaching Assistant")
+
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.85f))
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 680.dp)
+                    .border(
+                        1.dp,
+                        if (isDark) CyberCyan.copy(alpha = 0.35f) else ElectricBlue.copy(alpha = 0.3f),
+                        RoundedCornerShape(20.dp)
+                    ),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurface else LightSurface)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isDark) CyberCyan.copy(alpha = 0.15f) else ElectricBlue.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.SupervisorAccount,
+                                    contentDescription = null,
+                                    tint = if (isDark) CyberCyan else ElectricBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Admin & Staff Roles",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                )
+                                Text(
+                                    text = "Assign positions & permissions",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                    color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Filled.Logout,
+                                contentDescription = "Close",
+                                tint = if (isDark) TextSecondaryDark else TextSecondaryLight
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Legacy Clean Purge Banner
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isDark) DarkSurfaceElevated else LightSurfaceBorder.copy(alpha = 0.35f))
+                            .border(1.dp, CircuitWarning.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Account Ownership & Cleanup",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = CircuitWarning
+                                )
+                                Text(
+                                    text = "You are the Main Super Admin. Tap to purge any legacy test accounts.",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+                                    color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            }
+                            TextButton(onClick = onPurgeLegacyRajguru) {
+                                Text(
+                                    text = "Clean Legacy",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = CircuitWarning
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Section: Active Admins List
+                    Text(
+                        text = "ACTIVE ADMINS (${adminsList.size})",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.8.sp,
+                            fontSize = 10.sp
+                        ),
+                        color = if (isDark) CyberCyan else ElectricBlue
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        adminsList.forEach { admin ->
+                            val isCurrentMain = admin.isMainAdmin
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(
+                                        1.dp,
+                                        if (isCurrentMain) CircuitWarning.copy(alpha = 0.6f)
+                                        else if (isDark) DarkSurfaceBorder else LightSurfaceBorder,
+                                        RoundedCornerShape(12.dp)
+                                    ),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isCurrentMain) {
+                                        CircuitWarning.copy(alpha = 0.08f)
+                                    } else if (isDark) DarkSurfaceElevated else LightSurface
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = admin.fullName.ifBlank { "Administrator" },
+                                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                                    color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                                )
+                                                if (isCurrentMain) {
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .clip(RoundedCornerShape(4.dp))
+                                                            .background(CircuitWarning.copy(alpha = 0.25f))
+                                                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "MAIN SUPER ADMIN",
+                                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                                fontSize = 8.sp,
+                                                                fontWeight = FontWeight.ExtraBold
+                                                            ),
+                                                            color = CircuitWarning
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            Text(
+                                                text = admin.email.ifBlank { admin.displayId },
+                                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.5.sp),
+                                                color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                            )
+                                        }
+
+                                        if (!isCurrentMain) {
+                                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                IconButton(
+                                                    onClick = {
+                                                        editingAdminUid = admin.uid
+                                                        editPositionText = admin.adminPosition
+                                                    },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Edit,
+                                                        contentDescription = "Edit Position",
+                                                        tint = if (isDark) CyberCyan else ElectricBlue,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                                IconButton(
+                                                    onClick = { onDemoteAdmin(admin.uid) },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Delete,
+                                                        contentDescription = "Remove Admin",
+                                                        tint = com.roboticswala.hub.ui.theme.CircuitError,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    // Position Badge
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(if (isDark) CyberCyan.copy(alpha = 0.12f) else ElectricBlue.copy(alpha = 0.1f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "Position: " + (if (admin.adminPosition.isNotBlank()) admin.adminPosition else if (isCurrentMain) "Main Super Admin / Lab Director" else "Staff Admin"),
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 9.5.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
+                                            color = if (isDark) CyberCyan else ElectricBlue
+                                        )
+                                    }
+
+                                    // Inline position edit field if selected
+                                    if (editingAdminUid == admin.uid) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            OutlinedTextField(
+                                                value = editPositionText,
+                                                onValueChange = { editPositionText = it },
+                                                placeholder = { Text("e.g. Hardware Mentor", fontSize = 11.sp) },
+                                                modifier = Modifier.weight(1f),
+                                                textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                                singleLine = true
+                                            )
+                                            TextButton(
+                                                onClick = {
+                                                    onUpdateAdminPosition(admin.uid, editPositionText.trim())
+                                                    editingAdminUid = null
+                                                }
+                                            ) {
+                                                Text("Save", fontWeight = FontWeight.Bold, color = if (isDark) CyberCyan else ElectricBlue)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Section: Promote Student to Admin
+                    Text(
+                        text = "ADD / PROMOTE NEW ADMIN",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.8.sp,
+                            fontSize = 10.sp
+                        ),
+                        color = if (isDark) CyberCyan else ElectricBlue
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, if (isDark) DarkSurfaceBorder else LightSurfaceBorder, RoundedCornerShape(12.dp)),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurface)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "1. Select Student Candidate:",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                            )
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Candidate items
+                            if (studentsList.isEmpty()) {
+                                Text(
+                                    text = "No students currently registered in directory.",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                    color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            } else {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    studentsList.take(6).forEach { stu ->
+                                        val isChosen = selectedStudentId == stu.id
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(
+                                                    if (isChosen) (if (isDark) CyberCyan.copy(alpha = 0.2f) else ElectricBlue.copy(alpha = 0.15f))
+                                                    else Color.Transparent
+                                                )
+                                                .border(
+                                                    1.dp,
+                                                    if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else Color.Transparent,
+                                                    RoundedCornerShape(8.dp)
+                                                )
+                                                .clickable {
+                                                    selectedStudentId = stu.id
+                                                    selectedStudentName = stu.name
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "${stu.name} (${stu.studentId})",
+                                                    style = MaterialTheme.typography.bodySmall.copy(
+                                                        fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                                        fontSize = 11.sp
+                                                    ),
+                                                    color = if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextPrimaryDark else TextPrimaryLight)
+                                                )
+                                                if (isChosen) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Star,
+                                                        contentDescription = null,
+                                                        tint = if (isDark) CyberCyan else ElectricBlue,
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "2. Set Admin Position / Lab Role:",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                            )
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Preset Position Chips
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                presetPositions.take(3).forEach { pos ->
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(
+                                                if (newPositionText == pos) (if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.2f))
+                                                else (if (isDark) DarkSurface else LightSurfaceBorder)
+                                            )
+                                            .clickable { newPositionText = pos }
+                                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = pos,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                            color = if (newPositionText == pos) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            OutlinedTextField(
+                                value = newPositionText,
+                                onValueChange = { newPositionText = it },
+                                placeholder = { Text("e.g. Hardware Mentor or Lab In-Charge", fontSize = 11.sp) },
+                                modifier = Modifier.fillMaxWidth(),
+                                textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                                singleLine = true
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        if (selectedStudentId.isNotBlank()) Brush.horizontalGradient(listOf(ElectricBlue, CyberCyan))
+                                        else Brush.horizontalGradient(listOf(Color.Gray.copy(alpha = 0.5f), Color.Gray.copy(alpha = 0.5f)))
+                                    )
+                                    .clickable(enabled = selectedStudentId.isNotBlank()) {
+                                        onPromoteToAdmin(selectedStudentId, newPositionText.ifBlank { "Staff Admin" })
+                                        selectedStudentId = ""
+                                        selectedStudentName = ""
+                                        newPositionText = ""
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (selectedStudentId.isNotBlank()) "Promote to Admin ($selectedStudentName)" else "Select Candidate to Promote",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Close Button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isDark) DarkSurfaceElevated else LightSurfaceBorder)
+                            .clickable(onClick = onDismiss),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Done & Return",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                            )
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

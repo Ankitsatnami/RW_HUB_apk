@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.auth.pending
+﻿package com.roboticswala.hub.ui.screens.auth.pending
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -79,7 +79,7 @@ fun PendingApprovalScreen(
     viewModel: PendingApprovalViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
 

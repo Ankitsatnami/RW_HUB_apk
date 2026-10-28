@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.admin.tabs
+﻿package com.roboticswala.hub.ui.screens.admin.tabs
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -87,7 +87,7 @@ fun AdminAttendanceScreen(
     viewModel: AdminAttendanceViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface
     val borderColor = if (isDark) DarkSurfaceBorder else LightSurfaceBorder

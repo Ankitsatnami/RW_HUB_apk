@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.leaderboard
+﻿package com.roboticswala.hub.ui.screens.student.leaderboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -77,7 +77,7 @@ fun StudentLeaderboardScreen(
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Column(
         modifier = modifier

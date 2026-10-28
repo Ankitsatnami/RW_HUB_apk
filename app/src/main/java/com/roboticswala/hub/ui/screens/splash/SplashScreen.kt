@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.splash
+﻿package com.roboticswala.hub.ui.screens.splash
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -53,7 +53,7 @@ fun SplashScreen(
     onNavigateToPending: () -> Unit,
     viewModel: SplashViewModel = viewModel()
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {

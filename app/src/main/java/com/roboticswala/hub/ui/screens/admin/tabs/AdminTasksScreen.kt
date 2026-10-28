@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.admin.tabs
+﻿package com.roboticswala.hub.ui.screens.admin.tabs
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
@@ -88,7 +88,7 @@ fun AdminTasksScreen(
     viewModel: AdminTasksViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface

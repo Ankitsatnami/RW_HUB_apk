@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.admin.tabs
+﻿package com.roboticswala.hub.ui.screens.admin.tabs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -79,7 +79,7 @@ fun AdminProjectsScreen(
     onNavigateToDetails: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface

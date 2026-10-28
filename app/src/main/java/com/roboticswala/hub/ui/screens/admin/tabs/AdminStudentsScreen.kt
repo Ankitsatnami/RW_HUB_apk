@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.admin.tabs
+﻿package com.roboticswala.hub.ui.screens.admin.tabs
 
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -94,7 +94,7 @@ fun AdminStudentsScreen(
     onFilterChanged: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     var searchQuery by remember { mutableStateOf("") }
     var currentFilter by remember(activeFilter) { mutableStateOf(activeFilter) }
     var studentToDelete by remember { mutableStateOf<StudentDirectoryItem?>(null) }

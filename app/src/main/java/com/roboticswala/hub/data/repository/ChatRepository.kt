@@ -98,14 +98,22 @@ class ChatRepository(
         }
     }
 
-    suspend fun uploadChatAttachment(fileBytes: ByteArray, fileName: String): String? {
+    suspend fun uploadChatAttachment(fileBytes: ByteArray, fileName: String, mimeType: String = "*/*"): String? {
         return try {
-            val safeName = "${System.currentTimeMillis()}_${fileName.replace("[^a-zA-Z0-9._-]".toRegex(), "_")}"
-            val ref = storage.reference.child("chat_attachments/$safeName")
-            ref.putBytes(fileBytes).await()
-            ref.downloadUrl.await().toString()
+            com.roboticswala.hub.utils.ImageStorageHelper.uploadToStorageWithBase64Fallback(
+                storage = storage,
+                folder = "chat_attachments",
+                fileName = fileName,
+                fileBytes = fileBytes,
+                mimeType = mimeType
+            )
         } catch (e: Exception) {
-            null
+            try {
+                val b64 = android.util.Base64.encodeToString(fileBytes, android.util.Base64.NO_WRAP)
+                "data:$mimeType;base64,$b64"
+            } catch (_: Exception) {
+                null
+            }
         }
     }
 

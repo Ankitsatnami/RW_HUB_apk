@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import com.roboticswala.hub.ui.theme.ThemeManager
+import com.roboticswala.hub.ui.theme.LocalThemeIsDark
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -115,7 +116,7 @@ fun StudentMainScreen(
     )
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val snackbarHostState = remember { SnackbarHostState() }
     val context = androidx.compose.ui.platform.LocalContext.current
     val chatRepository = remember { com.roboticswala.hub.data.repository.ChatRepository() }
@@ -162,114 +163,177 @@ fun StudentMainScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = Color.Transparent,
             topBar = {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            RoboticsLogo(
-                                size = 32.dp,
-                                animate = false
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = "RW HUB",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = (-0.3).sp
-                                    ),
-                                    color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp),
+                            ambientColor = if (isDark) CyberCyan.copy(alpha = 0.22f) else ElectricBlue.copy(alpha = 0.15f),
+                            spotColor = Color.Black.copy(alpha = 0.35f)
+                        )
+                        .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                        .background(if (isDark) DarkBackground.copy(alpha = 0.96f) else LightBackground.copy(alpha = 0.98f))
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    if (isDark) CyberCyan.copy(alpha = 0.35f) else ElectricBlue.copy(alpha = 0.30f)
                                 )
-                                Text(
-                                    text = "STUDENT PORTAL",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = if (isDark) CyberCyan else ElectricBlue
-                                )
+                            ),
+                            shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                        )
+                ) {
+                    TopAppBar(
+                        title = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .shadow(
+                                            elevation = 6.dp,
+                                            shape = RoundedCornerShape(10.dp),
+                                            ambientColor = CyberCyan.copy(alpha = 0.4f),
+                                            spotColor = Color.Black.copy(alpha = 0.3f)
+                                        )
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isDark) DarkSurfaceElevated else LightSurfaceElevated)
+                                        .border(
+                                            width = 1.2.dp,
+                                            brush = Brush.linearGradient(listOf(CyberCyan, ElectricBlue)),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .padding(2.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    RoboticsLogo(
+                                        size = 32.dp,
+                                        animate = false
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = "RW HUB",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            letterSpacing = (-0.3).sp
+                                        ),
+                                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                    )
+                                    Text(
+                                        text = "STUDENT PORTAL",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = if (isDark) CyberCyan else ElectricBlue
+                                    )
+                                }
                             }
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onNavigateToChat) {
-                            BadgedBox(
-                                badge = {
-                                    if (unreadCount > 0) {
-                                        Badge(
-                                            containerColor = CircuitError,
-                                            contentColor = Color.White
-                                        ) {
-                                            Text(
-                                                text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
+                        },
+                        actions = {
+                            IconButton(onClick = onNavigateToChat) {
+                                BadgedBox(
+                                    badge = {
+                                        if (unreadCount > 0) {
+                                            Badge(
+                                                containerColor = CircuitError,
+                                                contentColor = Color.White
+                                            ) {
+                                                Text(
+                                                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
                                         }
                                     }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                                        contentDescription = "Community Chat",
+                                        tint = if (isDark) CyberCyan else ElectricBlue
+                                    )
                                 }
-                            ) {
+                            }
+                            IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Chat,
-                                    contentDescription = "Community Chat",
+                                    imageVector = if (isDark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                                    contentDescription = "Toggle Theme",
                                     tint = if (isDark) CyberCyan else ElectricBlue
                                 )
                             }
-                        }
-                        IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
-                            Icon(
-                                imageVector = if (isDark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
-                                contentDescription = "Toggle Theme",
-                                tint = if (isDark) CyberCyan else ElectricBlue
-                            )
-                        }
-                        IconButton(onClick = onLogout) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Logout,
-                                contentDescription = "Log Out",
-                                tint = if (isDark) TextSecondaryDark else TextSecondaryLight
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (isDark) DarkBackground.copy(alpha = 0.95f) else LightBackground.copy(alpha = 0.95f)
+                            IconButton(onClick = onLogout) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Logout,
+                                    contentDescription = "Log Out",
+                                    tint = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent
+                        )
                     )
-                )
+                }
             },
             bottomBar = {
-                NavigationBar(
-                    containerColor = if (isDark) DarkSurface.copy(alpha = 0.98f) else LightSurface.copy(alpha = 0.98f),
-                    modifier = Modifier.border(
-                        width = 1.dp,
-                        color = if (isDark) DarkSurfaceBorder else LightSurfaceBorder
-                    )
-                ) {
-                    StudentNavRoute.items.filterNotNull().forEach { item ->
-                        val isSelected = uiState.selectedTab == item.route
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = { viewModel.onTabSelected(item.route) },
-                            icon = {
-                                Icon(
-                                    imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.title
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                    )
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = if (isDark) CyberCyan else ElectricBlue,
-                                selectedTextColor = if (isDark) CyberCyan else ElectricBlue,
-                                unselectedIconColor = if (isDark) TextSecondaryDark else TextSecondaryLight,
-                                unselectedTextColor = if (isDark) TextSecondaryDark else TextSecondaryLight,
-                                indicatorColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated
-                            )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 18.dp,
+                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                            ambientColor = if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.18f),
+                            spotColor = Color.Black.copy(alpha = 0.5f)
                         )
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    if (isDark) CyberCyan.copy(alpha = 0.45f) else ElectricBlue.copy(alpha = 0.35f),
+                                    if (isDark) DarkSurfaceBorder else LightSurfaceBorder
+                                )
+                            ),
+                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                        )
+                ) {
+                    NavigationBar(
+                        containerColor = if (isDark) DarkSurface.copy(alpha = 0.98f) else LightSurface.copy(alpha = 0.98f),
+                        tonalElevation = 0.dp
+                    ) {
+                        StudentNavRoute.items.filterNotNull().forEach { item ->
+                            val isSelected = uiState.selectedTab == item.route
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = { viewModel.onTabSelected(item.route) },
+                                icon = {
+                                    Icon(
+                                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = item.title,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = item.title,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = if (isDark) CyberCyan else ElectricBlue,
+                                    selectedTextColor = if (isDark) CyberCyan else ElectricBlue,
+                                    indicatorColor = if (isDark) CyberCyan.copy(alpha = 0.20f) else ElectricBlue.copy(alpha = 0.15f),
+                                    unselectedIconColor = if (isDark) TextSecondaryDark else TextSecondaryLight,
+                                    unselectedTextColor = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            )
+                        }
                     }
                 }
             }

@@ -81,13 +81,14 @@ import com.roboticswala.hub.ui.theme.TextPrimaryDark
 import com.roboticswala.hub.ui.theme.TextPrimaryLight
 import com.roboticswala.hub.ui.theme.TextSecondaryDark
 import com.roboticswala.hub.ui.theme.TextSecondaryLight
+import com.roboticswala.hub.ui.theme.LocalThemeIsDark
 
 @Composable
 fun AdminAchievementsScreen(
     viewModel: AdminAchievementsViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface
@@ -293,7 +294,9 @@ fun AdminAchievementsScreen(
             onSelectBanner = viewModel::selectBannerForEdit,
             onSaveBanner = viewModel::saveBanner,
             onDeleteBanner = viewModel::deleteBanner,
-            onUploadImage = viewModel::uploadBannerImage
+            onUploadImage = { bytes, onSuccess, onError ->
+                viewModel.uploadBannerImage(bytes, onSuccess, onError)
+            }
         )
     }
 }
@@ -381,7 +384,7 @@ fun AdminAchievementReviewDialog(
     onReturnCorrection: (String) -> Unit
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     val textSecColor = if (isDark) TextSecondaryDark else TextSecondaryLight
 
@@ -499,9 +502,9 @@ fun AdminBannerManagementDialog(
     onSelectBanner: (AchievementBannerItem?) -> Unit,
     onSaveBanner: (AchievementBannerItem) -> Unit,
     onDeleteBanner: (String) -> Unit,
-    onUploadImage: (ByteArray, (String) -> Unit) -> Unit
+    onUploadImage: (ByteArray, (String) -> Unit, (String) -> Unit) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val context = LocalContext.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     
@@ -523,10 +526,13 @@ fun AdminBannerManagementDialog(
                 isUploadingImage = true
                 val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                 if (bytes != null && bytes.isNotEmpty()) {
-                    onUploadImage(bytes) { uploadedUrl ->
+                    onUploadImage(bytes, { uploadedUrl ->
                         imageUrl = uploadedUrl
                         isUploadingImage = false
-                    }
+                    }, { errorMsg ->
+                        isUploadingImage = false
+                        android.widget.Toast.makeText(context, errorMsg, android.widget.Toast.LENGTH_SHORT).show()
+                    })
                 } else {
                     isUploadingImage = false
                 }
@@ -615,7 +621,7 @@ fun AdminBannerManagementDialog(
                                 }
                             } else {
                                 RoboticsOutlinedButton(
-                                    text = if (imageUrl.isBlank()) "📁 Select Image from Device" else "📸 Change / Replace Image",
+                                    text = if (imageUrl.isBlank()) "Select Image from Device" else "Change / Replace Image",
                                     onClick = { imagePickerLauncher.launch("image/*") },
                                     leadingIcon = Icons.Filled.AddPhotoAlternate
                                 )
@@ -623,7 +629,7 @@ fun AdminBannerManagementDialog(
                         }
                     }
 
-                    item { RoboticsTextField(value = badge, onValueChange = { badge = it }, label = "Badge", placeholder = "e.g., 🥇 1st Prize Gold") }
+                    item { RoboticsTextField(value = badge, onValueChange = { badge = it }, label = "Badge / Award", placeholder = "e.g., 1st Prize Gold, National Winner") }
                     item { RoboticsTextField(value = category, onValueChange = { category = it }, label = "Category", placeholder = "e.g., Drone Hackathon") }
                     item { RoboticsTextField(value = team, onValueChange = { team = it }, label = "Team", placeholder = "e.g., Team AeroRobotics") }
                     item { RoboticsTextField(value = date, onValueChange = { date = it }, label = "Date", placeholder = "YYYY-MM-DD") }

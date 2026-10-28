@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.components
+﻿package com.roboticswala.hub.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,7 +63,7 @@ fun ForgotPasswordDialog(
     var email by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(

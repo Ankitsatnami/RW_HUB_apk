@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.admin.tabs
+﻿package com.roboticswala.hub.ui.screens.admin.tabs
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -108,7 +108,7 @@ fun AdminProfileScreen(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val scrollState = rememberScrollState()
@@ -524,7 +524,7 @@ private fun EditAdminProfileDialog(
     onDismiss: () -> Unit,
     onSave: (fullName: String, phone: String, org: String, designation: String, desk: String, adminId: String, emergency: String) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     var fullName by remember { mutableStateOf(currentProfile.fullName) }
     var adminId by remember { mutableStateOf(currentProfile.displayAdminId) }
     var designation by remember { mutableStateOf(if (currentProfile.branch.isNotBlank()) currentProfile.branch else "Lab Director & Robotics Head") }

@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.tabs
+﻿package com.roboticswala.hub.ui.screens.student.tabs
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -139,7 +139,7 @@ fun StudentHomeScreen(
     onNavigateToLeaderboard: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     var showAdminDirectoryDialog by remember { mutableStateOf(false) }
 
     PullToRefreshBox(

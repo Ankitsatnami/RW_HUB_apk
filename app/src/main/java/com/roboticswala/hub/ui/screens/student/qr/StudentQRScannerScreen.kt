@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.qr
+﻿package com.roboticswala.hub.ui.screens.student.qr
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -95,7 +95,7 @@ fun StudentQRScannerScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -319,7 +319,7 @@ fun AttendanceResultDialog(
     result: AttendanceScanResult,
     onDismiss: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
 
     val title: String

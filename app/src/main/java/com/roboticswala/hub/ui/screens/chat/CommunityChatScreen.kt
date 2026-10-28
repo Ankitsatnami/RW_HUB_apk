@@ -51,6 +51,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -102,6 +103,7 @@ import com.roboticswala.hub.ui.theme.TextPrimaryDark
 import com.roboticswala.hub.ui.theme.TextPrimaryLight
 import com.roboticswala.hub.ui.theme.TextSecondaryDark
 import com.roboticswala.hub.ui.theme.TextSecondaryLight
+import com.roboticswala.hub.ui.theme.LocalThemeIsDark
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -115,9 +117,11 @@ fun CommunityChatScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val listState = rememberLazyListState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var previewImageAttachment by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     // Mark as read on entry and on new message
     LaunchedEffect(Unit) {
@@ -131,6 +135,38 @@ fun CommunityChatScreen(
             viewModel.markAsRead(context)
             listState.animateScrollToItem(totalChatItems - 1)
         }
+    }
+
+    if (previewImageAttachment != null) {
+        val (imgUrl, imgName) = previewImageAttachment!!
+        ImageViewerDialog(
+            imageUrl = imgUrl,
+            imageName = imgName,
+            onDismiss = { previewImageAttachment = null },
+            onSaveToDevice = {
+                scope.launch {
+                    val res = com.roboticswala.hub.utils.ImageStorageHelper.saveToDownloads(
+                        context = context,
+                        fileName = imgName.ifBlank { "chat_image_${System.currentTimeMillis()}.jpg" },
+                        fileUrlOrBase64 = imgUrl,
+                        mimeType = "image/jpeg"
+                    )
+                    if (res.isSuccess) {
+                        Toast.makeText(context, "Image saved to Downloads folder!", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "Could not save image: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onOpenExternal = {
+                com.roboticswala.hub.utils.ImageStorageHelper.openFile(
+                    context = context,
+                    fileName = imgName.ifBlank { "chat_image.jpg" },
+                    fileUrlOrBase64 = imgUrl
+                )
+            },
+            isDark = isDark
+        )
     }
 
     RoboticsBackground {
@@ -187,14 +223,23 @@ fun CommunityChatScreen(
                                     else -> null
                                 }
                                 if (typingText != null) {
-                                    Text(
-                                        text = "✍️ $typingText",
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        ),
-                                        color = CyberCyanGlow
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(6.dp)
+                                                .clip(CircleShape)
+                                                .background(CyberCyanGlow)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = typingText,
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
+                                            color = CyberCyanGlow
+                                        )
+                                    }
                                 } else {
                                     Text(
                                         text = "Lab Community Room • Real-time",
@@ -251,12 +296,31 @@ fun CommunityChatScreen(
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(RoundedCornerShape(18.dp))
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(CyberCyan.copy(alpha = 0.2f), ElectricBlue.copy(alpha = 0.25f))
+                                        )
+                                    )
+                                    .border(1.5.dp, CyberCyan.copy(alpha = 0.6f), RoundedCornerShape(18.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Groups,
+                                    contentDescription = "Chat",
+                                    tint = if (isDark) CyberCyan else ElectricBlue,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                             Text(
-                                text = "💬 Welcome to the Lab Discussion!",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = if (isDark) CyberCyan else ElectricBlue
+                                text = "Welcome to Lab Discussion",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
                             )
                             Text(
                                 text = "Ask hardware questions, discuss projects, or share robotics updates with students and instructors.",
@@ -282,6 +346,16 @@ fun CommunityChatScreen(
                                 isOwn = isOwn,
                                 canDelete = canDelete,
                                 onDelete = { viewModel.deleteMessage(msg.id) },
+                                onPreviewImage = { url, name ->
+                                    previewImageAttachment = Pair(url, name)
+                                },
+                                onOpenFile = { url, name ->
+                                    scope.launch {
+                                        Toast.makeText(context, "Saving & opening $name...", Toast.LENGTH_SHORT).show()
+                                        com.roboticswala.hub.utils.ImageStorageHelper.saveToDownloads(context, name, url)
+                                        com.roboticswala.hub.utils.ImageStorageHelper.openFile(context, name, url)
+                                    }
+                                },
                                 isDark = isDark
                             )
                         }
@@ -304,6 +378,8 @@ fun ChatBubble(
     isOwn: Boolean,
     canDelete: Boolean,
     onDelete: () -> Unit,
+    onPreviewImage: (url: String, name: String) -> Unit = { _, _ -> },
+    onOpenFile: (url: String, name: String) -> Unit = { _, _ -> },
     isDark: Boolean
 ) {
     val timeFormat = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
@@ -395,7 +471,6 @@ fun ChatBubble(
 
                     // Attachment render (if present)
                     if (message.attachmentUrl.isNotBlank()) {
-                        val context = androidx.compose.ui.platform.LocalContext.current
                         if (message.attachmentType == "IMAGE") {
                             Box(
                                 modifier = Modifier
@@ -403,14 +478,10 @@ fun ChatBubble(
                                     .padding(vertical = 4.dp)
                                     .clip(RoundedCornerShape(10.dp))
                                     .clickable {
-                                        try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(message.attachmentUrl)).apply {
-                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                            }
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, "Cannot open image", Toast.LENGTH_SHORT).show()
-                                        }
+                                        onPreviewImage(
+                                            message.attachmentUrl,
+                                            message.attachmentName.ifBlank { "image_${System.currentTimeMillis()}.jpg" }
+                                        )
                                     }
                             ) {
                                 AsyncImage(
@@ -442,14 +513,10 @@ fun ChatBubble(
                                         RoundedCornerShape(10.dp)
                                     )
                                     .clickable {
-                                        try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(message.attachmentUrl)).apply {
-                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                            }
-                                            context.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, "Cannot open document", Toast.LENGTH_SHORT).show()
-                                        }
+                                        onOpenFile(
+                                            message.attachmentUrl,
+                                            message.attachmentName.ifBlank { "document" }
+                                        )
                                     }
                                     .padding(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -478,7 +545,7 @@ fun ChatBubble(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
-                                        text = "Tap to open / download",
+                                        text = "Tap to view & download",
                                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                         color = if (isOwn) Color.White.copy(alpha = 0.8f) else CyberCyan
                                     )
@@ -528,6 +595,146 @@ fun ChatBubble(
                                     .clickable(onClick = onDelete)
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ImageViewerDialog(
+    imageUrl: String,
+    imageName: String,
+    onDismiss: () -> Unit,
+    onSaveToDevice: () -> Unit,
+    onOpenExternal: () -> Unit,
+    isDark: Boolean
+) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.92f))
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isDark) DarkSurface else LightSurface)
+                    .border(
+                        1.dp,
+                        if (isDark) CyberCyan.copy(alpha = 0.4f) else ElectricBlue.copy(alpha = 0.3f),
+                        RoundedCornerShape(20.dp)
+                    )
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = imageName.ifBlank { "Lab Image" },
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = if (isDark) TextPrimaryDark else TextPrimaryLight,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Robotics Lab Shared Media",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isDark) CyberCyan else ElectricBlue
+                        )
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Close",
+                            tint = if (isDark) TextSecondaryDark else TextSecondaryLight
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Image Container
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 200.dp, max = 380.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.Black.copy(alpha = 0.4f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = imageName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 380.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Brush.horizontalGradient(listOf(ElectricBlue, CyberCyan)))
+                            .clickable(onClick = onSaveToDevice),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.Download,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Save to Downloads",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .height(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isDark) DarkSurfaceElevated else LightSurfaceBorder)
+                            .border(1.dp, CyberCyan.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .clickable(onClick = onOpenExternal)
+                            .padding(horizontal = 14.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.OpenInNew,
+                            contentDescription = "Open External",
+                            tint = if (isDark) CyberCyan else ElectricBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }

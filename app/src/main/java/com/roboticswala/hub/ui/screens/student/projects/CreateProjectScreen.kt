@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.projects
+﻿package com.roboticswala.hub.ui.screens.student.projects
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
@@ -100,7 +100,7 @@ fun CreateProjectScreen(
     viewModel: CreateProjectViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
@@ -586,7 +586,7 @@ fun AddTeamMemberDialog(
     onDismiss: () -> Unit,
     onAddMember: (UserProfile, String) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     val textSecColor = if (isDark) TextSecondaryDark else TextSecondaryLight
 

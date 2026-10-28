@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.booking
+﻿package com.roboticswala.hub.ui.screens.student.booking
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -93,7 +93,7 @@ fun StudentBookingsScreen(
     onNavigateBack: () -> Unit,
     viewModel: StudentBookingViewModel = viewModel(factory = StudentBookingViewModelFactory(studentProfile.uid))
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

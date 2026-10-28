@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.achievements
+﻿package com.roboticswala.hub.ui.screens.student.achievements
 
 import android.content.Intent
 import android.net.Uri
@@ -96,7 +96,7 @@ fun StudentAchievementsScreen(
     onNavigateToEdit: (Achievement) -> Unit = {},
     viewModel: StudentAchievementsViewModel = viewModel(factory = StudentAchievementsViewModelFactory(userProfile.uid))
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -461,7 +461,7 @@ fun AchievementDetailDialog(
     onEdit: () -> Unit
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     val textSecColor = if (isDark) TextSecondaryDark else TextSecondaryLight
 

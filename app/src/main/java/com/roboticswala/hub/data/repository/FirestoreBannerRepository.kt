@@ -74,9 +74,13 @@ class FirestoreBannerRepository(
         emit(Resource.Loading())
         try {
             val fileName = "banner_${UUID.randomUUID()}.jpg"
-            val ref = storage.reference.child("banners/$fileName")
-            ref.putBytes(imageBytes).await()
-            val url = ref.downloadUrl.await().toString()
+            val url = com.roboticswala.hub.utils.ImageStorageHelper.uploadToStorageWithBase64Fallback(
+                storage = storage,
+                folder = "banners",
+                fileName = fileName,
+                fileBytes = imageBytes,
+                mimeType = "image/jpeg"
+            )
             emit(Resource.Success(url))
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Failed to upload image: ${e.localizedMessage}"))

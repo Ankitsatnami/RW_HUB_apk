@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.tabs
+﻿package com.roboticswala.hub.ui.screens.student.tabs
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -117,7 +117,7 @@ fun StudentProfileScreen(
     onNavigateToAchievements: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()

@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.tasks
+﻿package com.roboticswala.hub.ui.screens.student.tasks
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -90,7 +90,7 @@ fun StudentTasksScreen(
     onNavigateBack: () -> Unit,
     viewModel: StudentTasksViewModel = viewModel(factory = StudentTasksViewModelFactory(studentProfile.uid))
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

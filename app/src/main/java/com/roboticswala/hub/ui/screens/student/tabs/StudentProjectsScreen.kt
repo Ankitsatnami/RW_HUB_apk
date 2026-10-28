@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.tabs
+﻿package com.roboticswala.hub.ui.screens.student.tabs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -84,7 +84,7 @@ fun StudentProjectsScreen(
     viewModel: StudentProjectsViewModel = viewModel(factory = StudentProjectsViewModelFactory(currentUid)),
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface

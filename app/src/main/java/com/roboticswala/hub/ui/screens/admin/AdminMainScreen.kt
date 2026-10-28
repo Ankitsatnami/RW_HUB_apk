@@ -82,6 +82,7 @@ import com.roboticswala.hub.ui.theme.LightSurfaceElevated
 import com.roboticswala.hub.ui.theme.TextPrimaryDark
 import com.roboticswala.hub.ui.theme.TextPrimaryLight
 import com.roboticswala.hub.ui.theme.TextSecondaryDark
+import com.roboticswala.hub.ui.theme.LocalThemeIsDark
 import com.roboticswala.hub.ui.theme.TextSecondaryLight
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,7 +93,7 @@ fun AdminMainScreen(
     viewModel: AdminViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalThemeIsDark.current
     val snackbarHostState = remember { SnackbarHostState() }
     val context = androidx.compose.ui.platform.LocalContext.current
     val currentUid = remember { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid.orEmpty() }
@@ -136,157 +137,134 @@ fun AdminMainScreen(
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            RoboticsLogo(
-                                size = 32.dp,
-                                animate = false
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "RW HUB",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = (-0.3).sp
-                                ),
-                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp),
+                            ambientColor = if (isDark) CyberCyan.copy(alpha = 0.22f) else ElectricBlue.copy(alpha = 0.15f),
+                            spotColor = Color.Black.copy(alpha = 0.35f)
+                        )
+                        .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+                        .background(if (isDark) DarkBackground.copy(alpha = 0.96f) else LightBackground.copy(alpha = 0.98f))
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    if (isDark) CyberCyan.copy(alpha = 0.35f) else ElectricBlue.copy(alpha = 0.30f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+                        )
+                ) {
+                    TopAppBar(
+                        title = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .shadow(
+                                            elevation = 6.dp,
+                                            shape = RoundedCornerShape(10.dp),
+                                            ambientColor = CyberCyan.copy(alpha = 0.4f),
+                                            spotColor = Color.Black.copy(alpha = 0.3f)
+                                        )
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isDark) DarkSurfaceElevated else LightSurfaceElevated)
+                                        .border(
+                                            width = 1.2.dp,
+                                            brush = Brush.linearGradient(listOf(CyberCyan, ElectricBlue)),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .padding(2.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    RoboticsLogo(
+                                        size = 32.dp,
+                                        animate = false
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = "RW HUB",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            letterSpacing = (-0.3).sp
+                                        ),
+                                        color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                    )
+                                    Text(
+                                        text = "SUPER ADMIN CONSOLE",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 0.5.sp
+                                        ),
+                                        color = CircuitWarning
+                                    )
+                                }
+                            }
+                        },
+                        actions = {
+                            val adminPhotoUrl = uiState.adminProfile?.photoUrl.orEmpty()
+                            val adminPhotoBitmap = remember(adminPhotoUrl) {
+                                if (adminPhotoUrl.isNotBlank() && !adminPhotoUrl.startsWith("http")) {
+                                    try {
+                                        val clean = if (adminPhotoUrl.contains(",")) adminPhotoUrl.substringAfter(",") else adminPhotoUrl
+                                        val bytes = Base64.decode(clean, Base64.DEFAULT)
+                                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+                                } else null
+                            }
+
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(CircuitWarning.copy(alpha = 0.2f))
-                                    .clickable { viewModel.onTabSelected(AdminNavRoute.More.route) }
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isDark) CyberCyan.copy(alpha = 0.15f) else ElectricBlue.copy(alpha = 0.12f))
+                                    .border(
+                                        width = 1.5.dp,
+                                        color = if (isDark) CyberCyan.copy(alpha = 0.6f) else ElectricBlue.copy(alpha = 0.5f),
+                                        shape = CircleShape
+                                    )
+                                    .clickable { viewModel.onTabSelected(AdminNavRoute.More.route) },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "ADMIN",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = CircuitWarning
-                                )
-                            }
-                        }
-                    },
-                    actions = {
-                        val adminPhotoUrl = uiState.adminProfile?.photoUrl.orEmpty()
-                        val adminPhotoBitmap = remember(adminPhotoUrl) {
-                            if (adminPhotoUrl.isNotBlank() && !adminPhotoUrl.startsWith("http")) {
-                                try {
-                                    val clean = if (adminPhotoUrl.contains(",")) adminPhotoUrl.substringAfter(",") else adminPhotoUrl
-                                    val bytes = Base64.decode(clean, Base64.DEFAULT)
-                                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                                } catch (e: Exception) {
-                                    null
+                                if (adminPhotoBitmap != null) {
+                                    Image(
+                                        bitmap = adminPhotoBitmap.asImageBitmap(),
+                                        contentDescription = "Admin Avatar",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else if (adminPhotoUrl.startsWith("http")) {
+                                    AsyncImage(
+                                        model = adminPhotoUrl,
+                                        contentDescription = "Admin Avatar",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Filled.Person,
+                                        contentDescription = "Admin Profile",
+                                        tint = if (isDark) CyberCyan else ElectricBlue,
+                                        modifier = Modifier.size(18.dp)
+                                    )
                                 }
-                            } else null
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(if (isDark) CyberCyan.copy(alpha = 0.15f) else ElectricBlue.copy(alpha = 0.12f))
-                                .border(
-                                    width = 1.5.dp,
-                                    color = if (isDark) CyberCyan.copy(alpha = 0.6f) else ElectricBlue.copy(alpha = 0.5f),
-                                    shape = CircleShape
-                                )
-                                .clickable { viewModel.onTabSelected(AdminNavRoute.More.route) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (adminPhotoBitmap != null) {
-                                Image(
-                                    bitmap = adminPhotoBitmap.asImageBitmap(),
-                                    contentDescription = "Admin Avatar",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else if (adminPhotoUrl.startsWith("http")) {
-                                AsyncImage(
-                                    model = adminPhotoUrl,
-                                    contentDescription = "Admin Avatar",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = "Admin Profile",
-                                    tint = if (isDark) CyberCyan else ElectricBlue,
-                                    modifier = Modifier.size(18.dp)
-                                )
                             }
-                        }
 
-                        Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
 
-                        IconButton(onClick = onNavigateToChat) {
-                            androidx.compose.material3.BadgedBox(
-                                badge = {
-                                    if (unreadCount > 0) {
-                                        androidx.compose.material3.Badge(
-                                            containerColor = CircuitError,
-                                            contentColor = Color.White
-                                        ) {
-                                            Text(
-                                                text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Chat,
-                                    contentDescription = "Community Chat",
-                                    tint = if (isDark) CyberCyan else ElectricBlue
-                                )
-                            }
-                        }
-
-                        IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
-                            Icon(
-                                imageVector = if (isDark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
-                                contentDescription = "Toggle Theme",
-                                tint = if (isDark) CyberCyan else ElectricBlue
-                            )
-                        }
-
-                        IconButton(onClick = onLogout) {
-                            Icon(
-                                imageVector = Icons.Filled.Logout,
-                                contentDescription = "Log Out",
-                                tint = if (isDark) TextSecondaryDark else TextSecondaryLight
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (isDark) DarkBackground.copy(alpha = 0.95f) else LightBackground.copy(alpha = 0.95f)
-                    )
-                )
-            },
-            bottomBar = {
-                NavigationBar(
-                    containerColor = if (isDark) DarkSurface.copy(alpha = 0.98f) else LightSurface.copy(alpha = 0.98f),
-                    modifier = Modifier.border(
-                        width = 1.dp,
-                        color = if (isDark) DarkSurfaceBorder else LightSurfaceBorder
-                    )
-                ) {
-                    AdminNavRoute.items.filterNotNull().forEach { item ->
-                        val isSelected = uiState.selectedTab == item.route
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = { viewModel.onTabSelected(item.route) },
-                            icon = {
-                                if (item == AdminNavRoute.More && unreadCount > 0) {
-                                    androidx.compose.material3.BadgedBox(
-                                        badge = {
+                            IconButton(onClick = onNavigateToChat) {
+                                androidx.compose.material3.BadgedBox(
+                                    badge = {
+                                        if (unreadCount > 0) {
                                             androidx.compose.material3.Badge(
                                                 containerColor = CircuitError,
                                                 contentColor = Color.White
@@ -298,35 +276,116 @@ fun AdminMainScreen(
                                                 )
                                             }
                                         }
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = item.title
-                                        )
                                     }
-                                } else {
+                                ) {
                                     Icon(
-                                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                        contentDescription = item.title
+                                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                                        contentDescription = "Community Chat",
+                                        tint = if (isDark) CyberCyan else ElectricBlue
                                     )
                                 }
-                            },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                    )
+                            }
+
+                            IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
+                                Icon(
+                                    imageVector = if (isDark) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                                    contentDescription = "Toggle Theme",
+                                    tint = if (isDark) CyberCyan else ElectricBlue
                                 )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = if (isDark) CyberCyan else ElectricBlue,
-                                selectedTextColor = if (isDark) CyberCyan else ElectricBlue,
-                                unselectedIconColor = if (isDark) TextSecondaryDark else TextSecondaryLight,
-                                unselectedTextColor = if (isDark) TextSecondaryDark else TextSecondaryLight,
-                                indicatorColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated
-                            )
+                            }
+
+                            IconButton(onClick = onLogout) {
+                                Icon(
+                                    imageVector = Icons.Filled.Logout,
+                                    contentDescription = "Log Out",
+                                    tint = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent
                         )
+                    )
+                }
+            },
+            bottomBar = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 18.dp,
+                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                            ambientColor = if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.18f),
+                            spotColor = Color.Black.copy(alpha = 0.5f)
+                        )
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    if (isDark) CyberCyan.copy(alpha = 0.45f) else ElectricBlue.copy(alpha = 0.35f),
+                                    if (isDark) DarkSurfaceBorder else LightSurfaceBorder
+                                )
+                            ),
+                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                        )
+                ) {
+                    NavigationBar(
+                        containerColor = if (isDark) DarkSurface.copy(alpha = 0.98f) else LightSurface.copy(alpha = 0.98f),
+                        tonalElevation = 0.dp
+                    ) {
+                        AdminNavRoute.items.filterNotNull().forEach { item ->
+                            val isSelected = uiState.selectedTab == item.route
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = { viewModel.onTabSelected(item.route) },
+                                icon = {
+                                    if (item == AdminNavRoute.More && unreadCount > 0) {
+                                        androidx.compose.material3.BadgedBox(
+                                            badge = {
+                                                androidx.compose.material3.Badge(
+                                                    containerColor = CircuitError,
+                                                    contentColor = Color.White
+                                                ) {
+                                                    Text(
+                                                        text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                                        fontSize = 9.sp,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                                contentDescription = item.title,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+                                    } else {
+                                        Icon(
+                                            imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                            contentDescription = item.title,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = item.title,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = if (isDark) CyberCyan else ElectricBlue,
+                                    selectedTextColor = if (isDark) CyberCyan else ElectricBlue,
+                                    indicatorColor = if (isDark) CyberCyan.copy(alpha = 0.20f) else ElectricBlue.copy(alpha = 0.15f),
+                                    unselectedIconColor = if (isDark) TextSecondaryDark else TextSecondaryLight,
+                                    unselectedTextColor = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                )
+                            )
+                        }
                     }
                 }
             },
@@ -365,6 +424,12 @@ fun AdminMainScreen(
                     AdminNavRoute.Bookings.route -> AdminBookingsScreen()
                     AdminNavRoute.More.route -> AdminMoreScreen(
                         adminProfile = uiState.adminProfile,
+                        adminsList = uiState.adminsList,
+                        studentsList = uiState.studentsList,
+                        onPromoteToAdmin = viewModel::promoteToAdmin,
+                        onUpdateAdminPosition = viewModel::updateAdminPosition,
+                        onDemoteAdmin = viewModel::demoteAdminToStudent,
+                        onPurgeLegacyRajguru = viewModel::purgeLegacyRajguruRecords,
                         onUpdateProfile = viewModel::updateAdminProfile,
                         onUpdatePhoto = viewModel::updateAdminPhoto,
                         onLogout = onLogout,

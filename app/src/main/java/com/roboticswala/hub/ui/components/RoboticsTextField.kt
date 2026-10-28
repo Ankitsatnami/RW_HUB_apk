@@ -68,7 +68,7 @@ fun RoboticsTextField(
     singleLine: Boolean = true,
     enabled: Boolean = true
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 

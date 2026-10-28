@@ -53,7 +53,7 @@ object ChatNotificationHelper {
 
         val pendingIntent = PendingIntent.getActivity(context, (System.currentTimeMillis() % 10000).toInt(), intent, flags)
 
-        val title = if (senderRole.isNotBlank()) "💬 $senderName ($senderRole)" else "💬 $senderName"
+        val title = if (senderRole.isNotBlank()) "$senderName ($senderRole)" else senderName
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

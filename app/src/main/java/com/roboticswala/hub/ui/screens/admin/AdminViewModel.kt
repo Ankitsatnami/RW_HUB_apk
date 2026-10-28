@@ -25,6 +25,7 @@ data class AdminUiState(
     val bookingsList: List<BookingRequestItem> = emptyList(),
     val banners: List<AchievementBannerItem> = emptyList(),
     val adminProfile: UserProfile? = null,
+    val adminsList: List<UserProfile> = emptyList(),
     val selectedTab: String = "admin_dashboard",
     val selectedSubScreen: String? = null,
     val returnToDashboardOnSubScreenClose: Boolean = false,
@@ -103,39 +104,49 @@ class AdminViewModel(
                 }
 
                 if (snapshot != null) {
-                    val students = snapshot.documents.mapNotNull { doc ->
-                        val data = doc.data ?: return@mapNotNull null
+                    val currentUid = auth.currentUser?.uid.orEmpty()
+                    val students = mutableListOf<StudentDirectoryItem>()
+                    val admins = mutableListOf<UserProfile>()
+
+                    snapshot.documents.forEach { doc ->
+                        val data = doc.data ?: return@forEach
                         val profile = UserProfile.fromMap(data)
-                        // Show all registered students or non-admins
+                        val uid = if (profile.uid.isNotBlank()) profile.uid else doc.id
                         if (!profile.isAdmin) {
-                            StudentDirectoryItem(
-                                id = if (profile.uid.isNotBlank()) profile.uid else doc.id,
-                                studentId = profile.displayStudentId,
-                                name = profile.fullName.ifBlank { "Student (${profile.email})" },
-                                email = profile.email,
-                                rfidStatus = if (profile.isApproved) "Active" else "Pending Review",
-                                currentProject = profile.branch.ifBlank { "Robotics Lab Member" },
-                                attendance = 95.0,
-                                status = profile.status.ifBlank { "Pending" },
-                                college = profile.college,
-                                branch = profile.branch,
-                                year = profile.year,
-                                phone = profile.phone,
-                                parentName = profile.parentName,
-                                parentPhone = profile.parentPhone,
-                                emergencyContact = profile.emergencyContact,
-                                aadharNumber = profile.aadharNumber,
-                                aadharCardUrl = profile.aadharCardUrl,
-                                photoUrl = profile.photoUrl,
-                                initials = profile.initials,
-                                createdAt = profile.createdAt
+                            students.add(
+                                StudentDirectoryItem(
+                                    id = uid,
+                                    studentId = profile.displayStudentId,
+                                    name = profile.fullName.ifBlank { "Student (${profile.email})" },
+                                    email = profile.email,
+                                    rfidStatus = if (profile.isApproved) "Active" else "Pending Review",
+                                    currentProject = profile.branch.ifBlank { "Robotics Lab Member" },
+                                    attendance = 95.0,
+                                    status = profile.status.ifBlank { "Pending" },
+                                    college = profile.college,
+                                    branch = profile.branch,
+                                    year = profile.year,
+                                    phone = profile.phone,
+                                    parentName = profile.parentName,
+                                    parentPhone = profile.parentPhone,
+                                    emergencyContact = profile.emergencyContact,
+                                    aadharNumber = profile.aadharNumber,
+                                    aadharCardUrl = profile.aadharCardUrl,
+                                    photoUrl = profile.photoUrl,
+                                    initials = profile.initials,
+                                    createdAt = profile.createdAt
+                                )
                             )
-                        } else null
+                        } else {
+                            val isMain = profile.isMainAdmin || uid == currentUid
+                            admins.add(profile.copy(uid = uid, isMainAdmin = isMain))
+                        }
                     }
 
                     _uiState.update { state ->
                         state.copy(
                             studentsList = students,
+                            adminsList = admins,
                             dashboardData = state.dashboardData.copy(
                                 totalStudents = students.size,
                                 activeStudents = students.count { it.status.equals("Approved", ignoreCase = true) },
@@ -411,6 +422,74 @@ class AdminViewModel(
                     }
                 }
             }
+    }
+
+    fun promoteToAdmin(userId: String, position: String) {
+        viewModelScope.launch {
+            try {
+                val updates = mapOf(
+                    "role" to "Admin",
+                    "adminPosition" to position.ifBlank { "Staff Admin" },
+                    "status" to "Approved"
+                )
+                firestore.collection("users").document(userId).update(updates).await()
+                _uiState.update { it.copy(snackbarMessage = "Promoted user to Admin ($position)") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(snackbarMessage = "Promotion failed: ${e.message}") }
+            }
+        }
+    }
+
+    fun updateAdminPosition(userId: String, position: String) {
+        viewModelScope.launch {
+            try {
+                firestore.collection("users").document(userId).update("adminPosition", position).await()
+                _uiState.update { it.copy(snackbarMessage = "Admin role position updated") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(snackbarMessage = "Update failed: ${e.message}") }
+            }
+        }
+    }
+
+    fun demoteAdminToStudent(userId: String) {
+        val currentUid = auth.currentUser?.uid.orEmpty()
+        if (userId == currentUid) {
+            _uiState.update { it.copy(snackbarMessage = "Cannot demote your own Main Super Admin account!") }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val updates = mapOf(
+                    "role" to "Student",
+                    "adminPosition" to "",
+                    "isMainAdmin" to false
+                )
+                firestore.collection("users").document(userId).update(updates).await()
+                _uiState.update { it.copy(snackbarMessage = "Admin converted to Student") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(snackbarMessage = "Demotion failed: ${e.message}") }
+            }
+        }
+    }
+
+    fun purgeLegacyRajguruRecords() {
+        viewModelScope.launch {
+            try {
+                val snapshot = firestore.collection("users").get().await()
+                var count = 0
+                for (doc in snapshot.documents) {
+                    val name = doc.getString("fullName").orEmpty()
+                    val email = doc.getString("email").orEmpty()
+                    if (name.contains("Rajguru", ignoreCase = true) || email.contains("rajguru", ignoreCase = true)) {
+                        doc.reference.delete().await()
+                        count++
+                    }
+                }
+                _uiState.update { it.copy(snackbarMessage = if (count > 0) "Purged $count legacy Rajguru record(s)" else "No legacy records found") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(snackbarMessage = "Purge error: ${e.message}") }
+            }
+        }
     }
 
     fun clearMessage() {

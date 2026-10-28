@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.expenses
+﻿package com.roboticswala.hub.ui.screens.student.expenses
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -92,7 +92,7 @@ fun StudentExpensesScreen(
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Box(
         modifier = modifier

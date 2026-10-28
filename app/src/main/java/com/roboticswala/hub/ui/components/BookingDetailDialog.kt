@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.components
+﻿package com.roboticswala.hub.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,7 +68,7 @@ fun BookingDetailDialog(
     onApproveBooking: (() -> Unit)? = null,
     onRejectBooking: (() -> Unit)? = null
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val scrollState = rememberScrollState()
 
     val surfaceColor = if (isDark) DarkSurface else LightSurface

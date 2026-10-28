@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.work
+﻿package com.roboticswala.hub.ui.screens.student.work
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
@@ -85,7 +85,7 @@ fun CreateWorkUpdateDialog(
     ) -> Unit
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     val textSecColor = if (isDark) TextSecondaryDark else TextSecondaryLight
     val elevatedColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated
@@ -227,7 +227,7 @@ fun DailyWorkDetailDialog(
     onDismiss: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val textColor = if (isDark) TextPrimaryDark else TextPrimaryLight
     val textSecColor = if (isDark) TextSecondaryDark else TextSecondaryLight
     val elevatedColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated

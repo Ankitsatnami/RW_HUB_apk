@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.components
+﻿package com.roboticswala.hub.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,7 +53,7 @@ fun MetricCard(
     accentColor: Color = CyberCyan,
     onClick: (() -> Unit)? = null
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Card(
         modifier = modifier

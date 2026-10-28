@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.components
+﻿package com.roboticswala.hub.ui.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -44,7 +44,7 @@ fun RoboticsLogo(
     size: Dp = 100.dp,
     animate: Boolean = true
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val infiniteTransition = rememberInfiniteTransition(label = "RoboticsLogoPulse")
 
     val pulseScale by if (animate) {

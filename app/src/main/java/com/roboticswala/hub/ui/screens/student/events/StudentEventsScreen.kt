@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.events
+﻿package com.roboticswala.hub.ui.screens.student.events
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -85,7 +85,7 @@ fun StudentEventsScreen(
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Column(
         modifier = modifier

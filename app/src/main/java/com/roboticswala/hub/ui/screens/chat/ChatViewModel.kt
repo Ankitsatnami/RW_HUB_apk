@@ -193,7 +193,12 @@ class ChatViewModel(
         viewModelScope.launch {
             var uploadedUrl = ""
             if (attachmentBytes != null) {
-                uploadedUrl = repository.uploadChatAttachment(attachmentBytes, attachmentName).orEmpty()
+                val mime = when (attachmentType) {
+                    "IMAGE" -> "image/jpeg"
+                    "DOCUMENT" -> if (attachmentName.endsWith(".pdf", ignoreCase = true)) "application/pdf" else "application/octet-stream"
+                    else -> "*/*"
+                }
+                uploadedUrl = repository.uploadChatAttachment(attachmentBytes, attachmentName, mime).orEmpty()
             }
 
             val newMsg = ChatMessage(
@@ -201,7 +206,7 @@ class ChatViewModel(
                 senderName = state.currentUserName,
                 senderRole = state.currentUserRole,
                 senderPhotoUrl = state.currentUserPhotoUrl,
-                message = text.ifBlank { if (attachmentType == "IMAGE") "📷 Photo" else "📄 $attachmentName" },
+                message = text.ifBlank { if (attachmentType == "IMAGE") "Shared an Image" else "Shared File: $attachmentName" },
                 attachmentUrl = uploadedUrl,
                 attachmentType = attachmentType,
                 attachmentName = attachmentName,

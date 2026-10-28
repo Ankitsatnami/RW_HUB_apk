@@ -1,6 +1,8 @@
 package com.roboticswala.hub.ui.theme
 
 import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,7 @@ object ThemeManager {
         val modeStr = prefs.getString(KEY_THEME_MODE, AppThemeMode.SYSTEM.name) ?: AppThemeMode.SYSTEM.name
         _themeMode.value = try {
             AppThemeMode.valueOf(modeStr)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             AppThemeMode.SYSTEM
         }
     }
@@ -37,6 +39,23 @@ object ThemeManager {
         val nextMode = if (currentlyDark) AppThemeMode.LIGHT else AppThemeMode.DARK
         setThemeMode(context, nextMode)
     }
+
+    fun resolveIsDark(mode: AppThemeMode, systemDark: Boolean): Boolean {
+        return when (mode) {
+            AppThemeMode.SYSTEM -> systemDark
+            AppThemeMode.DARK -> true
+            AppThemeMode.LIGHT -> false
+        }
+    }
 }
 
 val LocalThemeIsDark = compositionLocalOf { true }
+
+/**
+ * Universal theme-aware helper property. Automatically reacts whenever the user toggles theme.
+ */
+val isAppDark: Boolean
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalThemeIsDark.current
+

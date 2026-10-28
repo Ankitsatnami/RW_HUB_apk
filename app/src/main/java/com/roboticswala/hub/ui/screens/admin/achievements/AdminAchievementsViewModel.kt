@@ -237,7 +237,7 @@ class AdminAchievementsViewModel(
         }
     }
 
-    fun uploadBannerImage(imageBytes: ByteArray, onUploaded: (String) -> Unit) {
+    fun uploadBannerImage(imageBytes: ByteArray, onUploaded: (String) -> Unit, onError: (String) -> Unit = {}) {
         viewModelScope.launch {
             bannerRepository.uploadBannerImage(imageBytes).collect { res ->
                 when (res) {
@@ -247,7 +247,9 @@ class AdminAchievementsViewModel(
                         res.data?.let { onUploaded(it) }
                     }
                     is Resource.Error -> {
-                        _uiState.update { it.copy(isActionLoading = false, errorMessage = res.message ?: "Failed to upload image") }
+                        val msg = res.message ?: "Failed to upload image"
+                        _uiState.update { it.copy(isActionLoading = false, errorMessage = msg) }
+                        onError(msg)
                     }
                 }
             }

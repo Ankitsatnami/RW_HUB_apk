@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.projects
+﻿package com.roboticswala.hub.ui.screens.student.projects
 
 import android.content.Intent
 import android.net.Uri
@@ -113,7 +113,7 @@ fun ProjectDetailsScreen(
     viewModel: ProjectDetailsViewModel = viewModel(factory = ProjectDetailsViewModelFactory(projectId))
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

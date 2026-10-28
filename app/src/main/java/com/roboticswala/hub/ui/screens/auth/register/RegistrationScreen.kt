@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.auth.register
+﻿package com.roboticswala.hub.ui.screens.auth.register
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -85,7 +85,7 @@ fun RegistrationScreen(
     viewModel: RegisterViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }

@@ -1,4 +1,4 @@
-package com.roboticswala.hub.ui.screens.student.notices
+﻿package com.roboticswala.hub.ui.screens.student.notices
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -78,7 +78,7 @@ fun StudentNoticesScreen(
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = com.roboticswala.hub.ui.theme.LocalThemeIsDark.current
 
     Column(
         modifier = modifier
