@@ -150,6 +150,7 @@ fun AdminDashboardScreen(
         AchievementBannerCarousel(
             banners = banners,
             isDark = isDark,
+            isAdmin = true,
             onNavigateToAchievements = onNavigateToAchievements,
             onEditBanner = onNavigateToAchievements
         )

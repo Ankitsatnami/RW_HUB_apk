@@ -227,7 +227,14 @@ class AdminAchievementsViewModel(
                 when (res) {
                     is Resource.Loading -> _uiState.update { it.copy(isActionLoading = true) }
                     is Resource.Success -> {
-                        _uiState.update { it.copy(isActionLoading = false, selectedBannerForEdit = null, snackbarMessage = "Banner saved successfully!") }
+                        _uiState.update {
+                            it.copy(
+                                isActionLoading = false,
+                                selectedBannerForEdit = null,
+                                isBannerModalOpen = false,
+                                snackbarMessage = "Banner saved successfully! Live showcase updated."
+                            )
+                        }
                     }
                     is Resource.Error -> {
                         _uiState.update { it.copy(isActionLoading = false, errorMessage = res.message) }
@@ -262,7 +269,14 @@ class AdminAchievementsViewModel(
                 when (res) {
                     is Resource.Loading -> _uiState.update { it.copy(isActionLoading = true) }
                     is Resource.Success -> {
-                        _uiState.update { it.copy(isActionLoading = false, selectedBannerForEdit = null, snackbarMessage = "Banner deleted!") }
+                        _uiState.update {
+                            it.copy(
+                                isActionLoading = false,
+                                selectedBannerForEdit = null,
+                                isBannerModalOpen = false,
+                                snackbarMessage = "Banner removed successfully."
+                            )
+                        }
                     }
                     is Resource.Error -> {
                         _uiState.update { it.copy(isActionLoading = false, errorMessage = res.message) }

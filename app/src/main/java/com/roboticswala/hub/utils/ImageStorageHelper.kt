@@ -71,13 +71,14 @@ object ImageStorageHelper {
         fileBytes: ByteArray,
         mimeType: String = "image/jpeg"
     ): String = withContext(Dispatchers.IO) {
-        val safeBytes = if (mimeType.startsWith("image/")) {
-            compressImage(fileBytes, maxDimension = 900, quality = 80)
+        // Keep original high-resolution bytes for Firebase Storage (only optimize if > 8MB)
+        val storageBytes = if (mimeType.startsWith("image/") && fileBytes.size > 8 * 1024 * 1024) {
+            compressImage(fileBytes, maxDimension = 2560, quality = 94)
         } else {
             fileBytes
         }
 
-        // Try Firebase Storage first
+        // Try Firebase Storage first with full original clarity
         try {
             val safeName = "${System.currentTimeMillis()}_${fileName.replace("[^a-zA-Z0-9._-]".toRegex(), "_")}"
             val ref = storage.reference.child("$folder/$safeName")
@@ -85,17 +86,22 @@ object ImageStorageHelper {
                 .setContentType(mimeType)
                 .build()
 
-            ref.putBytes(safeBytes, metadata).await()
+            ref.putBytes(storageBytes, metadata).await()
             val downloadUrl = ref.downloadUrl.await().toString()
             if (downloadUrl.isNotBlank()) {
                 return@withContext downloadUrl
             }
         } catch (_: Exception) {
-            // Storage upload failed (permissions/no bucket), proceed to Base64 fallback
+            // Storage upload failed (permissions/offline), proceed to Base64 fallback
         }
 
-        // Base64 Data URI fallback
-        val base64Data = Base64.encodeToString(safeBytes, Base64.NO_WRAP)
+        // Base64 Data URI fallback (used ONLY if Storage upload fails)
+        val fallbackBytes = if (mimeType.startsWith("image/")) {
+            compressImage(fileBytes, maxDimension = 1200, quality = 86)
+        } else {
+            fileBytes
+        }
+        val base64Data = Base64.encodeToString(fallbackBytes, Base64.NO_WRAP)
         "data:$mimeType;base64,$base64Data"
     }
 

@@ -5,6 +5,11 @@ import android.app.Application
 class RoboticsApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        // Day 1 Application initialization
+        instance = this
+    }
+
+    companion object {
+        lateinit var instance: RoboticsApp
+            private set
     }
 }

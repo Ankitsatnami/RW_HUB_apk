@@ -11,6 +11,8 @@ import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.ui.graphics.vector.ImageVector
 
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.outlined.QrCode
 
@@ -32,6 +34,13 @@ sealed class AdminNavRoute(
         title = "Attendance",
         selectedIcon = Icons.Filled.QrCode,
         unselectedIcon = Icons.Outlined.QrCode
+    )
+
+    object Chat : AdminNavRoute(
+        route = "admin_chat",
+        title = "Chat",
+        selectedIcon = Icons.AutoMirrored.Filled.Chat,
+        unselectedIcon = Icons.AutoMirrored.Outlined.Chat
     )
 
     object Students : AdminNavRoute(
@@ -57,6 +66,6 @@ sealed class AdminNavRoute(
 
     companion object {
         val items: List<AdminNavRoute>
-            get() = listOf(Dashboard, Attendance, Students, Bookings, More)
+            get() = listOf(Dashboard, Attendance, Chat, Bookings, More)
     }
 }

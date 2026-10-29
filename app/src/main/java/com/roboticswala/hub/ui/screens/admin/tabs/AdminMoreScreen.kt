@@ -37,8 +37,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import com.roboticswala.hub.data.models.StudentDirectoryItem
@@ -98,6 +103,7 @@ fun AdminMoreScreen(
     adminsList: List<UserProfile> = emptyList(),
     studentsList: List<StudentDirectoryItem> = emptyList(),
     onPromoteToAdmin: (userId: String, position: String) -> Unit = { _, _ -> },
+    onCreateDirectAdmin: (name: String, email: String, password: String, position: String, onResult: (Boolean, String) -> Unit) -> Unit = { _, _, _, _, _ -> },
     onUpdateAdminPosition: (userId: String, position: String) -> Unit = { _, _ -> },
     onDemoteAdmin: (userId: String) -> Unit = {},
     onPurgeLegacyRajguru: () -> Unit = {},
@@ -759,6 +765,7 @@ fun AdminMoreScreen(
             adminsList = adminsList,
             studentsList = studentsList,
             onPromoteToAdmin = onPromoteToAdmin,
+            onCreateDirectAdmin = onCreateDirectAdmin,
             onUpdateAdminPosition = onUpdateAdminPosition,
             onDemoteAdmin = onDemoteAdmin,
             onPurgeLegacyRajguru = onPurgeLegacyRajguru,
@@ -889,19 +896,30 @@ fun AdminStaffManagementDialog(
     adminsList: List<UserProfile>,
     studentsList: List<StudentDirectoryItem>,
     onPromoteToAdmin: (userId: String, position: String) -> Unit,
+    onCreateDirectAdmin: (name: String, email: String, password: String, position: String, onResult: (Boolean, String) -> Unit) -> Unit = { _, _, _, _, _ -> },
     onUpdateAdminPosition: (userId: String, position: String) -> Unit,
     onDemoteAdmin: (userId: String) -> Unit,
     onPurgeLegacyRajguru: () -> Unit,
     onDismiss: () -> Unit,
     isDark: Boolean
 ) {
+    var addModeTab by remember { mutableStateOf(0) } // 0 = Direct Create, 1 = Promote Student
+
+    // Direct Admin Creation state
+    var directName by remember { mutableStateOf("") }
+    var directEmail by remember { mutableStateOf("") }
+    var directPassword by remember { mutableStateOf("") }
+    var directPosition by remember { mutableStateOf("Hardware Mentor") }
+    var isDirectCreating by remember { mutableStateOf(false) }
+
+    // Student Promotion state
     var selectedStudentId by remember { mutableStateOf("") }
     var selectedStudentName by remember { mutableStateOf("") }
     var newPositionText by remember { mutableStateOf("") }
     var editingAdminUid by remember { mutableStateOf<String?>(null) }
     var editPositionText by remember { mutableStateOf("") }
 
-    val presetPositions = listOf("Lab Director", "Hardware Mentor", "Faculty In-Charge", "Inventory In-Charge", "Teaching Assistant")
+    val presetPositions = listOf("Lab Director", "Hardware Mentor", "Faculty In-Charge", "Inventory In-Charge", "Research Associate", "Teaching Assistant")
 
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
@@ -1170,9 +1188,9 @@ fun AdminStaffManagementDialog(
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // Section: Promote Student to Admin
+                    // Section: Add / Create New Admin Form
                     Text(
-                        text = "ADD / PROMOTE NEW ADMIN",
+                        text = "ADD NEW ADMIN FOR LAB POSITIONS",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.8.sp,
@@ -1183,151 +1201,356 @@ fun AdminStaffManagementDialog(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Card(
+                    // Tab Toggle: Direct Create vs. Promote Student
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, if (isDark) DarkSurfaceBorder else LightSurfaceBorder, RoundedCornerShape(12.dp)),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurface)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isDark) DarkSurfaceElevated else LightSurfaceBorder)
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "1. Select Student Candidate:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
-                            )
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            // Candidate items
-                            if (studentsList.isEmpty()) {
-                                Text(
-                                    text = "No students currently registered in directory.",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                                    color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (addModeTab == 0) (if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.2f))
+                                    else Color.Transparent
                                 )
-                            } else {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    studentsList.take(6).forEach { stu ->
-                                        val isChosen = selectedStudentId == stu.id
+                                .clickable { addModeTab = 0 }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Icon(
+                                    imageVector = Icons.Filled.PersonAdd,
+                                    contentDescription = null,
+                                    tint = if (addModeTab == 0) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(
+                                    text = "Direct Create Admin",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (addModeTab == 0) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight)
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (addModeTab == 1) (if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.2f))
+                                    else Color.Transparent
+                                )
+                                .clickable { addModeTab = 1 }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Icon(
+                                    imageVector = Icons.Filled.School,
+                                    contentDescription = null,
+                                    tint = if (addModeTab == 1) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(
+                                    text = "Promote Student",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (addModeTab == 1) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    if (addModeTab == 0) {
+                        // ── DIRECT CREATE ADMIN FORM ──
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, if (isDark) CyberCyan.copy(alpha = 0.4f) else ElectricBlue.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurface)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = "New Administrator Details:",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isDark) CyberCyan else ElectricBlue
+                                )
+
+                                OutlinedTextField(
+                                    value = directName,
+                                    onValueChange = { directName = it },
+                                    label = { Text("Full Name *", fontSize = 11.sp) },
+                                    placeholder = { Text("e.g. Dr. Rohit Sharma", fontSize = 11.sp) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    singleLine = true
+                                )
+
+                                OutlinedTextField(
+                                    value = directEmail,
+                                    onValueChange = { directEmail = it },
+                                    label = { Text("Email Address *", fontSize = 11.sp) },
+                                    placeholder = { Text("e.g. rohit.mentor@roboticswala.com", fontSize = 11.sp) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    singleLine = true
+                                )
+
+                                OutlinedTextField(
+                                    value = directPassword,
+                                    onValueChange = { directPassword = it },
+                                    label = { Text("Initial Login Password (min 6 chars)", fontSize = 11.sp) },
+                                    placeholder = { Text("e.g. Admin@1234", fontSize = 11.sp) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    singleLine = true
+                                )
+
+                                Text(
+                                    text = "Assign Position / Lab Role:",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                )
+
+                                // Preset Position Chips
+                                LazyRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    items(presetPositions) { pos ->
+                                        val isChosen = directPosition == pos
                                         Box(
                                             modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(8.dp))
+                                                .clip(RoundedCornerShape(6.dp))
                                                 .background(
-                                                    if (isChosen) (if (isDark) CyberCyan.copy(alpha = 0.2f) else ElectricBlue.copy(alpha = 0.15f))
-                                                    else Color.Transparent
+                                                    if (isChosen) (if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.2f))
+                                                    else (if (isDark) DarkSurface else LightSurfaceBorder)
                                                 )
                                                 .border(
                                                     1.dp,
                                                     if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else Color.Transparent,
-                                                    RoundedCornerShape(8.dp)
+                                                    RoundedCornerShape(6.dp)
                                                 )
-                                                .clickable {
-                                                    selectedStudentId = stu.id
-                                                    selectedStudentName = stu.name
-                                                }
-                                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                                .clickable { directPosition = pos }
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
                                         ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    text = "${stu.name} (${stu.studentId})",
-                                                    style = MaterialTheme.typography.bodySmall.copy(
-                                                        fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
-                                                        fontSize = 11.sp
-                                                    ),
-                                                    color = if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextPrimaryDark else TextPrimaryLight)
-                                                )
-                                                if (isChosen) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.Star,
-                                                        contentDescription = null,
-                                                        tint = if (isDark) CyberCyan else ElectricBlue,
-                                                        modifier = Modifier.size(14.dp)
+                                            Text(
+                                                text = pos,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.5.sp),
+                                                color = if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                OutlinedTextField(
+                                    value = directPosition,
+                                    onValueChange = { directPosition = it },
+                                    label = { Text("Custom Position Title", fontSize = 11.sp) },
+                                    placeholder = { Text("e.g. Senior Hardware Lead", fontSize = 11.sp) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                    singleLine = true
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(42.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(
+                                            if (directEmail.isNotBlank() && !isDirectCreating) Brush.horizontalGradient(listOf(ElectricBlue, CyberCyan))
+                                            else Brush.horizontalGradient(listOf(Color.Gray.copy(alpha = 0.5f), Color.Gray.copy(alpha = 0.5f)))
+                                        )
+                                        .clickable(enabled = directEmail.isNotBlank() && !isDirectCreating) {
+                                            isDirectCreating = true
+                                            onCreateDirectAdmin(
+                                                directName,
+                                                directEmail,
+                                                directPassword,
+                                                directPosition
+                                            ) { success, _ ->
+                                                isDirectCreating = false
+                                                if (success) {
+                                                    directName = ""
+                                                    directEmail = ""
+                                                    directPassword = ""
+                                                }
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isDirectCreating) {
+                                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                                    } else {
+                                        Text(
+                                            text = "Create & Add Admin Account",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // ── PROMOTE STUDENT FORM ──
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, if (isDark) DarkSurfaceBorder else LightSurfaceBorder, RoundedCornerShape(12.dp)),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurface)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "1. Select Student Candidate:",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                // Candidate items
+                                if (studentsList.isEmpty()) {
+                                    Text(
+                                        text = "No students currently registered in directory.",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                        color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                                    )
+                                } else {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        studentsList.take(6).forEach { stu ->
+                                            val isChosen = selectedStudentId == stu.id
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(
+                                                        if (isChosen) (if (isDark) CyberCyan.copy(alpha = 0.2f) else ElectricBlue.copy(alpha = 0.15f))
+                                                        else Color.Transparent
                                                     )
+                                                    .border(
+                                                        1.dp,
+                                                        if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else Color.Transparent,
+                                                        RoundedCornerShape(8.dp)
+                                                    )
+                                                    .clickable {
+                                                        selectedStudentId = stu.id
+                                                        selectedStudentName = stu.name
+                                                    }
+                                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = "${stu.name} (${stu.studentId})",
+                                                        style = MaterialTheme.typography.bodySmall.copy(
+                                                            fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                                            fontSize = 11.sp
+                                                        ),
+                                                        color = if (isChosen) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextPrimaryDark else TextPrimaryLight)
+                                                    )
+                                                    if (isChosen) {
+                                                        Icon(
+                                                            imageVector = Icons.Filled.Star,
+                                                            contentDescription = null,
+                                                            tint = if (isDark) CyberCyan else ElectricBlue,
+                                                            modifier = Modifier.size(14.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
 
-                            Text(
-                                text = "2. Set Admin Position / Lab Role:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = if (isDark) TextPrimaryDark else TextPrimaryLight
-                            )
+                                Text(
+                                    text = "2. Set Admin Position / Lab Role:",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isDark) TextPrimaryDark else TextPrimaryLight
+                                )
 
-                            Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(6.dp))
 
-                            // Preset Position Chips
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                presetPositions.take(3).forEach { pos ->
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(
-                                                if (newPositionText == pos) (if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.2f))
-                                                else (if (isDark) DarkSurface else LightSurfaceBorder)
+                                // Preset Position Chips
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    presetPositions.take(3).forEach { pos ->
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(
+                                                    if (newPositionText == pos) (if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.2f))
+                                                    else (if (isDark) DarkSurface else LightSurfaceBorder)
+                                                )
+                                                .clickable { newPositionText = pos }
+                                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                                        ) {
+                                            Text(
+                                                text = pos,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                                color = if (newPositionText == pos) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight)
                                             )
-                                            .clickable { newPositionText = pos }
-                                            .padding(horizontal = 6.dp, vertical = 3.dp)
-                                    ) {
-                                        Text(
-                                            text = pos,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                            color = if (newPositionText == pos) (if (isDark) CyberCyan else ElectricBlue) else (if (isDark) TextSecondaryDark else TextSecondaryLight)
-                                        )
+                                        }
                                     }
                                 }
-                            }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            OutlinedTextField(
-                                value = newPositionText,
-                                onValueChange = { newPositionText = it },
-                                placeholder = { Text("e.g. Hardware Mentor or Lab In-Charge", fontSize = 11.sp) },
-                                modifier = Modifier.fillMaxWidth(),
-                                textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                                singleLine = true
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(42.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        if (selectedStudentId.isNotBlank()) Brush.horizontalGradient(listOf(ElectricBlue, CyberCyan))
-                                        else Brush.horizontalGradient(listOf(Color.Gray.copy(alpha = 0.5f), Color.Gray.copy(alpha = 0.5f)))
-                                    )
-                                    .clickable(enabled = selectedStudentId.isNotBlank()) {
-                                        onPromoteToAdmin(selectedStudentId, newPositionText.ifBlank { "Staff Admin" })
-                                        selectedStudentId = ""
-                                        selectedStudentName = ""
-                                        newPositionText = ""
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = if (selectedStudentId.isNotBlank()) "Promote to Admin ($selectedStudentName)" else "Select Candidate to Promote",
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
+                                OutlinedTextField(
+                                    value = newPositionText,
+                                    onValueChange = { newPositionText = it },
+                                    placeholder = { Text("e.g. Hardware Mentor or Lab In-Charge", fontSize = 11.sp) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                                    singleLine = true
                                 )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(42.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(
+                                            if (selectedStudentId.isNotBlank()) Brush.horizontalGradient(listOf(ElectricBlue, CyberCyan))
+                                            else Brush.horizontalGradient(listOf(Color.Gray.copy(alpha = 0.5f), Color.Gray.copy(alpha = 0.5f)))
+                                        )
+                                        .clickable(enabled = selectedStudentId.isNotBlank()) {
+                                            onPromoteToAdmin(selectedStudentId, newPositionText.ifBlank { "Staff Admin" })
+                                            selectedStudentId = ""
+                                            selectedStudentName = ""
+                                            newPositionText = ""
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (selectedStudentId.isNotBlank()) "Promote to Admin ($selectedStudentName)" else "Select Candidate to Promote",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

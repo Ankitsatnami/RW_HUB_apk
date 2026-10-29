@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.FolderZip
+import androidx.compose.material.icons.filled.AddLink
+import androidx.compose.material.icons.filled.CloudQueue
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.InsertDriveFile
@@ -570,6 +572,39 @@ fun ChatBubble(
                             color = if (isOwn) Color.White
                             else if (isDark) TextPrimaryDark else TextPrimaryLight
                         )
+
+                        if (message.message.contains("http://") || message.message.contains("https://")) {
+                            val url = message.message.split("\\s+".toRegex()).firstOrNull { it.startsWith("http://") || it.startsWith("https://") }
+                            if (url != null) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isOwn) Color.White.copy(alpha = 0.22f) else CyberCyan.copy(alpha = 0.15f))
+                                        .clickable {
+                                            try {
+                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                                context.startActivity(intent)
+                                            } catch (_: Exception) {}
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.OpenInNew,
+                                        contentDescription = "Open Link",
+                                        tint = if (isOwn) Color.White else CyberCyan,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Text(
+                                        text = if (url.contains("drive.google.com")) "Open in Google Drive ➔" else "Open Link ➔",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
+                                        color = if (isOwn) Color.White else CyberCyan
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     // Footer: time + optional delete button
@@ -938,6 +973,35 @@ fun ChatInputBar(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     AttachmentOptionRow(
+                        icon = Icons.Filled.CloudQueue,
+                        title = "Robotics Hub Google Drive",
+                        subtitle = "Open shared high-res storage folder",
+                        iconColor = CyberCyan,
+                        isDark = isDark,
+                        onClick = {
+                            showAttachmentDialog = false
+                            try {
+                                val driveUrl = "https://drive.google.com/drive/folders/1tBxC2BmaPW9Xy-35PMbBgwbuuIFAt0JY?usp=sharing"
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(driveUrl))
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                Toast.makeText(context, "Could not open Google Drive", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                    AttachmentOptionRow(
+                        icon = Icons.Filled.AddLink,
+                        title = "Share Google Drive Link",
+                        subtitle = "Insert shared folder link into chat",
+                        iconColor = ElectricBlue,
+                        isDark = isDark,
+                        onClick = {
+                            showAttachmentDialog = false
+                            val driveUrl = "https://drive.google.com/drive/folders/1tBxC2BmaPW9Xy-35PMbBgwbuuIFAt0JY?usp=sharing"
+                            onInputTextChange(if (text.isBlank()) "📁 Shared Robotics Drive: $driveUrl" else "$text\n📁 Drive Link: $driveUrl")
+                        }
+                    )
+                    AttachmentOptionRow(
                         icon = Icons.Filled.PhotoCamera,
                         title = "Live Camera",
                         subtitle = "Capture and share photo",
@@ -951,7 +1015,7 @@ fun ChatInputBar(
                     AttachmentOptionRow(
                         icon = Icons.Filled.Image,
                         title = "Gallery / Photos",
-                        subtitle = "Select diagrams, photos from gallery",
+                        subtitle = "Select diagrams, photos from gallery (High-Res)",
                         iconColor = ElectricBlue,
                         isDark = isDark,
                         onClick = {

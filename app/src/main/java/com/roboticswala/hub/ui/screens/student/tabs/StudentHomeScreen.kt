@@ -1,4 +1,4 @@
-﻿package com.roboticswala.hub.ui.screens.student.tabs
+package com.roboticswala.hub.ui.screens.student.tabs
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -207,7 +207,9 @@ fun StudentHomeScreen(
                 AchievementBannerCarousel(
                     banners = uiState.banners,
                     isDark = isDark,
-                    onNavigateToAchievements = onNavigateToAchievements
+                    isAdmin = false,
+                    onNavigateToAchievements = onNavigateToAchievements,
+                    onEditBanner = null
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

@@ -264,29 +264,12 @@ fun AdminMainScreen(
 
                             Spacer(modifier = Modifier.width(6.dp))
 
-                            IconButton(onClick = onNavigateToChat) {
-                                androidx.compose.material3.BadgedBox(
-                                    badge = {
-                                        if (unreadCount > 0) {
-                                            androidx.compose.material3.Badge(
-                                                containerColor = CircuitError,
-                                                contentColor = Color.White
-                                            ) {
-                                                Text(
-                                                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.Chat,
-                                        contentDescription = "Community Chat",
-                                        tint = if (isDark) CyberCyan else ElectricBlue
-                                    )
-                                }
+                            IconButton(onClick = { viewModel.onTabSelected(AdminNavRoute.Students.route) }) {
+                                Icon(
+                                    imageVector = Icons.Filled.People,
+                                    contentDescription = "Students Directory",
+                                    tint = if (isDark) CyberCyan else ElectricBlue
+                                )
                             }
 
                             IconButton(onClick = { ThemeManager.toggleTheme(context, isDark) }) {
@@ -341,9 +324,17 @@ fun AdminMainScreen(
                             val isSelected = uiState.selectedTab == item.route
                             NavigationBarItem(
                                 selected = isSelected,
-                                onClick = { viewModel.onTabSelected(item.route) },
+                                onClick = {
+                                    if (item == AdminNavRoute.Chat) {
+                                        onNavigateToChat()
+                                    } else {
+                                        viewModel.onTabSelected(item.route)
+                                    }
+                                },
                                 icon = {
-                                    if (item == AdminNavRoute.More && unreadCount > 0) {
+                                    val isChatBadge = item == AdminNavRoute.Chat && unreadCount > 0
+                                    val isMoreBadge = item == AdminNavRoute.More && unreadCount > 0 && !AdminNavRoute.items.contains(AdminNavRoute.Chat)
+                                    if (isChatBadge || isMoreBadge) {
                                         androidx.compose.material3.BadgedBox(
                                             badge = {
                                                 androidx.compose.material3.Badge(
@@ -430,6 +421,7 @@ fun AdminMainScreen(
                         adminsList = uiState.adminsList,
                         studentsList = uiState.studentsList,
                         onPromoteToAdmin = viewModel::promoteToAdmin,
+                        onCreateDirectAdmin = viewModel::createDirectAdmin,
                         onUpdateAdminPosition = viewModel::updateAdminPosition,
                         onDemoteAdmin = viewModel::demoteAdminToStudent,
                         onPurgeLegacyRajguru = viewModel::purgeLegacyRajguruRecords,

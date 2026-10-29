@@ -10,7 +10,37 @@ data class AchievementBannerItem(
     val imageUrl: String = "",
     val description: String = ""
 ) {
+    fun toMap(): Map<String, Any?> = mapOf(
+        "id" to id,
+        "title" to title,
+        "badge" to badge,
+        "category" to category,
+        "team" to team,
+        "date" to date,
+        "imageUrl" to imageUrl,
+        "description" to description,
+        "updatedAt" to System.currentTimeMillis()
+    )
+
     companion object {
+        fun fromSnapshot(doc: com.google.firebase.firestore.DocumentSnapshot): AchievementBannerItem {
+            val data = doc.data ?: emptyMap<String, Any?>()
+            return fromMap(doc.id, data)
+        }
+
+        fun fromMap(id: String, map: Map<String, Any?>): AchievementBannerItem {
+            return AchievementBannerItem(
+                id = id.ifBlank { map["id"] as? String ?: "" },
+                title = map["title"] as? String ?: "",
+                badge = map["badge"] as? String ?: "",
+                category = map["category"] as? String ?: "",
+                team = map["team"] as? String ?: "",
+                date = map["date"] as? String ?: "",
+                imageUrl = map["imageUrl"] as? String ?: "",
+                description = map["description"] as? String ?: ""
+            )
+        }
+
         val DEFAULT_BANNERS = listOf(
             AchievementBannerItem(
                 id = "default_1",
@@ -45,3 +75,4 @@ data class AchievementBannerItem(
         )
     }
 }
+

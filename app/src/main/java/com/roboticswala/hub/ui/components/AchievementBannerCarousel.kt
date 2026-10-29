@@ -59,6 +59,7 @@ import kotlinx.coroutines.delay
 fun AchievementBannerCarousel(
     banners: List<AchievementBannerItem>,
     isDark: Boolean = LocalThemeIsDark.current,
+    isAdmin: Boolean = false,
     onNavigateToAchievements: () -> Unit,
     onEditBanner: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -66,6 +67,7 @@ fun AchievementBannerCarousel(
     val activeBanners = if (banners.isNotEmpty()) banners else AchievementBannerItem.DEFAULT_BANNERS
 
     var currentIndex by remember { mutableStateOf(0) }
+    var previewBanner by remember { mutableStateOf<AchievementBannerItem?>(null) }
 
     // Auto-advance sliding timer every 3.5 seconds
     LaunchedEffect(activeBanners.size) {
@@ -129,7 +131,8 @@ fun AchievementBannerCarousel(
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (onEditBanner != null) {
+                // Strictly Admin-only edit & upload action
+                if (isAdmin && onEditBanner != null) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -146,10 +149,12 @@ fun AchievementBannerCarousel(
                     }
                 }
                 Text(
-                    text = "View All ➔",
+                    text = if (isAdmin) "Manage ➔" else "View Details ➔",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = if (isDark) CyberCyan else ElectricBlue,
-                    modifier = Modifier.clickable { onNavigateToAchievements() }
+                    modifier = Modifier.clickable {
+                        if (isAdmin) onNavigateToAchievements() else previewBanner = currentBanner
+                    }
                 )
             }
         }
@@ -167,7 +172,9 @@ fun AchievementBannerCarousel(
                     ambientColor = if (isDark) CyberCyan.copy(alpha = 0.25f) else ElectricBlue.copy(alpha = 0.15f),
                     spotColor = Color.Black.copy(alpha = 0.35f)
                 )
-                .clickable { onNavigateToAchievements() },
+                .clickable {
+                    if (isAdmin) onNavigateToAchievements() else previewBanner = currentBanner
+                },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = if (isDark) DarkSurfaceElevated else LightSurfaceElevated),
             border = androidx.compose.foundation.BorderStroke(
@@ -321,5 +328,86 @@ fun AchievementBannerCarousel(
                 }
             }
         }
+
+        // Read-only Showcase Dialog for students / viewers
+        if (previewBanner != null) {
+            val item = previewBanner!!
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { previewBanner = null },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = { previewBanner = null }) {
+                        Text("Close", fontWeight = FontWeight.Bold, color = if (isDark) CyberCyan else ElectricBlue)
+                    }
+                },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(imageVector = Icons.Filled.EmojiEvents, contentDescription = null, tint = if (isDark) CyberCyan else ElectricBlue)
+                        Text(text = item.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        if (item.imageUrl.isNotBlank()) {
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                            ) {
+                                AsyncImage(
+                                    model = item.imageUrl,
+                                    contentDescription = item.title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+
+                        if (item.badge.isNotBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(CircuitSuccess.copy(alpha = 0.15f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "★ ${item.badge}",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = CircuitSuccess
+                                )
+                            }
+                        }
+
+                        if (item.team.isNotBlank()) {
+                            Text(
+                                text = "Team / Project: ${item.team}",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+
+                        if (item.category.isNotBlank()) {
+                            Text(
+                                text = "Category: ${item.category}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isDark) TextSecondaryDark else TextSecondaryLight
+                            )
+                        }
+
+                        if (item.description.isNotBlank()) {
+                            Text(
+                                text = item.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            )
+        }
     }
 }
+

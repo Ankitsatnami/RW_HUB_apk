@@ -25,8 +25,8 @@ class FirestoreBannerRepository(
                 return@addSnapshotListener
             }
             if (snapshot != null) {
-                val banners = snapshot.documents.mapNotNull { doc ->
-                    doc.toObject(AchievementBannerItem::class.java)?.copy(id = doc.id)
+                val banners = snapshot.documents.map { doc ->
+                    AchievementBannerItem.fromSnapshot(doc)
                 }
                 trySend(banners)
             }
@@ -39,7 +39,7 @@ class FirestoreBannerRepository(
         try {
             val newBannerRef = bannersCollection.document()
             val bannerWithId = banner.copy(id = newBannerRef.id)
-            newBannerRef.set(bannerWithId).await()
+            newBannerRef.set(bannerWithId.toMap()).await()
             emit(Resource.Success(Unit))
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Failed to add banner"))
@@ -53,7 +53,7 @@ class FirestoreBannerRepository(
                 emit(Resource.Error("Banner ID is missing"))
                 return@flow
             }
-            bannersCollection.document(banner.id).set(banner).await()
+            bannersCollection.document(banner.id).set(banner.toMap()).await()
             emit(Resource.Success(Unit))
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "Failed to update banner"))

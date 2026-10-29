@@ -2,9 +2,11 @@ package com.roboticswala.hub.ui.screens.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.roboticswala.hub.RoboticsApp
 import com.roboticswala.hub.data.models.AdminDashboardData
 import com.roboticswala.hub.data.models.BookingRequestItem
 import com.roboticswala.hub.data.models.StudentDirectoryItem
@@ -488,6 +490,86 @@ class AdminViewModel(
                 _uiState.update { it.copy(snackbarMessage = if (count > 0) "Purged $count legacy Rajguru record(s)" else "No legacy records found") }
             } catch (e: Exception) {
                 _uiState.update { it.copy(snackbarMessage = "Purge error: ${e.message}") }
+            }
+        }
+    }
+
+    fun createDirectAdmin(
+        name: String,
+        email: String,
+        password: String,
+        position: String,
+        onResult: (Boolean, String) -> Unit = { _, _ -> }
+    ) {
+        val cleanEmail = email.trim()
+        val cleanName = name.trim()
+        val cleanPos = position.trim().ifBlank { "Staff Admin" }
+        val cleanPass = password.trim()
+
+        if (cleanEmail.isBlank()) {
+            _uiState.update { it.copy(snackbarMessage = "Email address is required") }
+            onResult(false, "Email address is required")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                var targetUid = ""
+                // 1. If password provided (minimum 6 chars), attempt creating secondary Auth account
+                if (cleanPass.length >= 6) {
+                    try {
+                        val secondaryAppName = "AdminCreatorApp"
+                        val secondaryApp = try {
+                            FirebaseApp.getInstance(secondaryAppName)
+                        } catch (_: Exception) {
+                            val defaultApp = FirebaseApp.getInstance()
+                            FirebaseApp.initializeApp(RoboticsApp.instance, defaultApp.options, secondaryAppName)
+                        }
+                        val secondaryAuth = FirebaseAuth.getInstance(secondaryApp)
+                        val result = secondaryAuth.createUserWithEmailAndPassword(cleanEmail, cleanPass).await()
+                        targetUid = result.user?.uid.orEmpty()
+                        secondaryAuth.signOut()
+                    } catch (_: Exception) {
+                        // User might already exist in Firebase Auth
+                    }
+                }
+
+                // 2. If targetUid is empty, check if user exists in Firestore by email
+                if (targetUid.isBlank()) {
+                    val existing = firestore.collection("users")
+                        .whereEqualTo("email", cleanEmail)
+                        .get()
+                        .await()
+                    if (!existing.isEmpty) {
+                        targetUid = existing.documents.first().id
+                    } else {
+                        targetUid = "admin_" + cleanEmail.replace("[^a-zA-Z0-9]".toRegex(), "_")
+                    }
+                }
+
+                val adminProfile = mapOf(
+                    "uid" to targetUid,
+                    "fullName" to cleanName.ifBlank { "Administrator" },
+                    "email" to cleanEmail,
+                    "role" to "Admin",
+                    "adminPosition" to cleanPos,
+                    "status" to "Approved",
+                    "isMainAdmin" to false,
+                    "approvedAt" to System.currentTimeMillis()
+                )
+
+                firestore.collection("users").document(targetUid)
+                    .set(adminProfile, com.google.firebase.firestore.SetOptions.merge())
+                    .await()
+
+                _uiState.update {
+                    it.copy(snackbarMessage = "Admin '$cleanName' ($cleanPos) added successfully!")
+                }
+                onResult(true, "Admin created successfully")
+            } catch (e: Exception) {
+                val msg = e.localizedMessage ?: "Failed to create admin"
+                _uiState.update { it.copy(snackbarMessage = msg) }
+                onResult(false, msg)
             }
         }
     }
