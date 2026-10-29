@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import com.roboticswala.hub.ui.theme.ThemeManager
 import androidx.compose.material3.ExperimentalMaterial3Api

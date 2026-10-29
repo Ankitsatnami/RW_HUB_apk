@@ -385,6 +385,7 @@ fun ChatBubble(
     onOpenFile: (url: String, name: String) -> Unit = { _, _ -> },
     isDark: Boolean
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val timeFormat = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
     val formattedTime = remember(message.timestamp, message.clientTimeMillis) {
         val date = message.timestamp ?: Date(message.clientTimeMillis)
@@ -998,7 +999,7 @@ fun ChatInputBar(
                         onClick = {
                             showAttachmentDialog = false
                             val driveUrl = "https://drive.google.com/drive/folders/1tBxC2BmaPW9Xy-35PMbBgwbuuIFAt0JY?usp=sharing"
-                            onInputTextChange(if (text.isBlank()) "📁 Shared Robotics Drive: $driveUrl" else "$text\n📁 Drive Link: $driveUrl")
+                            onTextChanged(if (text.isBlank()) "📁 Shared Robotics Drive: $driveUrl" else "$text\n📁 Drive Link: $driveUrl")
                         }
                     )
                     AttachmentOptionRow(

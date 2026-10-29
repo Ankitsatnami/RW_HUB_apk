@@ -53,6 +53,8 @@ import com.roboticswala.hub.ui.theme.LightSurfaceElevated
 import com.roboticswala.hub.ui.theme.LocalThemeIsDark
 import com.roboticswala.hub.ui.theme.TextPrimaryDark
 import com.roboticswala.hub.ui.theme.TextPrimaryLight
+import com.roboticswala.hub.ui.theme.TextSecondaryDark
+import com.roboticswala.hub.ui.theme.TextSecondaryLight
 import kotlinx.coroutines.delay
 
 @Composable
